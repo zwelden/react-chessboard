@@ -9,7 +9,7 @@
   width: 600px;
 }
 
-.chessboard-container svg {
+.chessboard-container .board-wrapper > svg {
   height: 100%;
   width: 100%;
 }

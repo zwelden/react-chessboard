@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'; 
 import {ReactComponent as KingWhite} from '../assets/img/king_white.svg';
 import {ReactComponent as QueenWhite} from '../assets/img/queen_white.svg';
 import {ReactComponent as RookWhite} from '../assets/img/rook_white.svg';
@@ -6,7 +6,7 @@ import {ReactComponent as BishopWhite} from '../assets/img/bishop_white.svg';
 import {ReactComponent as KnightWhite} from '../assets/img/knight_white.svg';
 import {ReactComponent as PawnWhite} from '../assets/img/pawn_white.svg';
 import {ReactComponent as KingBlack} from '../assets/img/king_black.svg';
-import {ReactComponent as QueenBlack} from '../assets/img/king_black.svg';
+import {ReactComponent as QueenBlack} from '../assets/img/queen_black.svg';
 import {ReactComponent as RookBlack} from '../assets/img/rook_black.svg';
 import {ReactComponent as BishopBlack} from '../assets/img/bishop_black.svg';
 import {ReactComponent as KnightBlack} from '../assets/img/knight_black.svg';
