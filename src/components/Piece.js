@@ -36,13 +36,32 @@ class Piece extends React.Component {
         }
 
         this.renderPiece = pieceComponents[this.props.color][this.props.piece];
+        
+        this.state = {
+            postitionStyles: {
+                position: 'absolute',
+                top: ((7 - this.props.row) * 12.5) + '%',
+                left: (this.props.col * 12.5) + '%',
+                height: '12.5%',
+                width: '12.5%',
+                display: 'flex',
+                'align-items': 'center',
+                'justify-content': 'center'
+            },
+            row: this.props.row,
+            col: this.props.col
+        }
+    }
+
+    displayValidMoves = () => {
+        alert('displaying valid moves');
     }
 
     render() {
         return (
-            <React.Fragment>
+            <div className="piece-container" style={this.state.postitionStyles} onClick={this.displayValidMoves}>
                 {this.renderPiece}
-            </React.Fragment>
+            </div>
         )
     }
 }

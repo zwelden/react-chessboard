@@ -39,25 +39,12 @@ class Chessboard extends React.Component {
             row.forEach((piece, col_index) => {
                 if (piece === '') { return; }
 
-                let postitionStyles = {
-                    position: 'absolute',
-                    top: ((7 - row_index) * 12.5) + '%',
-                    left: (col_index * 12.5) + '%',
-                    height: '12.5%',
-                    width: '12.5%',
-                    display: 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'center'
-                }
-
                 let pieceType = this.pieceMap.piece[piece.charAt(0)];
                 let pieceColor = this.pieceMap.color[piece.charAt(1)];
 
                 
                 this.pieceComponents.push((
-                    <div className="piece-container" style={postitionStyles}>
-                        <Piece color={pieceColor} piece={pieceType} />
-                    </div>
+                    <Piece color={pieceColor} piece={pieceType} row={row_index} col={col_index} />
                 ))
             });
         });
