@@ -1,0 +1,9 @@
+.piece-container {
+    position: absolute;
+    height: 12.5%;
+    width: 12.5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}

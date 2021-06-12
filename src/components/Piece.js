@@ -12,6 +12,8 @@ import {ReactComponent as BishopBlack} from '../assets/img/bishop_black.svg';
 import {ReactComponent as KnightBlack} from '../assets/img/knight_black.svg';
 import {ReactComponent as PawnBlack} from '../assets/img/pawn_black.svg';
 
+import './Piece.css';
+
 class Piece extends React.Component {
     constructor(props) {
         super(props);
@@ -39,27 +41,19 @@ class Piece extends React.Component {
         
         this.state = {
             postitionStyles: {
-                position: 'absolute',
                 top: ((7 - this.props.row) * 12.5) + '%',
-                left: (this.props.col * 12.5) + '%',
-                height: '12.5%',
-                width: '12.5%',
-                display: 'flex',
-                'align-items': 'center',
-                'justify-content': 'center'
+                left: (this.props.col * 12.5) + '%'
             },
             row: this.props.row,
             col: this.props.col
         }
     }
 
-    displayValidMoves = () => {
-        alert('displaying valid moves');
-    }
-
     render() {
         return (
-            <div className="piece-container" style={this.state.postitionStyles} onClick={this.displayValidMoves}>
+            <div className="piece-container" 
+                style={this.state.postitionStyles} 
+                onClick={() => this.props.determineValidMoves(this.state.row, this.state.col)}>
                 {this.renderPiece}
             </div>
         )

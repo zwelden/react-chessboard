@@ -1,7 +1,9 @@
 import React from 'react';
 import './Chessboard.css';
 import {ReactComponent as Board} from '../assets/img/chessboard.svg'; 
+import {determineValidPieceMoves} from '../utilities/moveEngine.js'
 import Piece from './Piece'
+import ValidMoveSquares from './ValidMoveSquares';
 
 class Chessboard extends React.Component {
     constructor (props) {
@@ -22,10 +24,10 @@ class Chessboard extends React.Component {
             }
         }
         
-        this.boardPositions = [
+        let boardPositions = [
             ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
             ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
-            ['', '', '', '', '', '', '', ''],
+            ['', '', '', 'pw', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
@@ -33,9 +35,9 @@ class Chessboard extends React.Component {
             ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
         ];
 
-        this.pieceComponents = [];
+       let pieceComponents = [];
 
-        this.boardPositions.forEach((row, row_index) => {
+        boardPositions.forEach((row, row_index) => {
             row.forEach((piece, col_index) => {
                 if (piece === '') { return; }
 
@@ -43,19 +45,49 @@ class Chessboard extends React.Component {
                 let pieceColor = this.pieceMap.color[piece.charAt(1)];
 
                 
-                this.pieceComponents.push((
-                    <Piece color={pieceColor} piece={pieceType} row={row_index} col={col_index} />
+                pieceComponents.push((
+                    <Piece key={row_index + '-' + col_index} color={pieceColor} piece={pieceType} row={row_index} col={col_index} determineValidMoves={this.determineValidMoves} />
                 ))
             });
         });
+
+        this.state = {
+            validMoveSquares: [],
+            boardPositions: boardPositions,
+            pieceComponents: pieceComponents
+        }
+    }
+
+    
+    displayValidMoveSquares = (validMoves) => {
+        this.setState({validMoveSquares: validMoves});
+    }
+
+    determineValidMoves = (row, col) => {
+        let validMoves = determineValidPieceMoves(this.state.boardPositions, row, col);
+        console.log(validMoves);
+
+        if (validMoves.length > 0) {
+            this.displayValidMoveSquares(validMoves);
+        }
+        else {
+            this.setState({validMoveSquares: []});
+        }
+    }
+
+    clearValidMoves = () => {
+        this.setState({validMoveSquares: []});
     }
 
     render () {
         return (
-            <div className="board-wrapper">
-                <Board />
-                {this.pieceComponents.map(component => component)}
-            </div>
+            <React.Fragment>
+                <div className="board-wrapper">
+                    <Board onClick={this.clearValidMoves} />
+                    {this.state.pieceComponents}
+                    <ValidMoveSquares locations={this.state.validMoveSquares} />
+                </div>
+            </React.Fragment>
         )
     }
 }

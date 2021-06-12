@@ -1,12 +1,12 @@
 .App {
   text-align: center;
-  padding: 4rem;
+  padding-top: 2.5%;
 }
 
 .chessboard-container {
   margin: auto;
-  width: 600px;
-  width: 600px;
+  width: min(85vh, 85vw);
+  width: min(85vh, 85vw);
 }
 
 .chessboard-container .board-wrapper > svg {
