@@ -27,7 +27,7 @@ class Chessboard extends React.Component {
         let boardPositions = [
             ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
             ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
-            ['', '', '', 'pw', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
@@ -65,7 +65,6 @@ class Chessboard extends React.Component {
 
     determineValidMoves = (row, col) => {
         let validMoves = determineValidPieceMoves(this.state.boardPositions, row, col);
-        console.log(validMoves);
 
         if (validMoves.length > 0) {
             this.displayValidMoveSquares(validMoves);
