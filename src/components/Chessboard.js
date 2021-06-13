@@ -27,12 +27,12 @@ class Chessboard extends React.Component {
         let boardPositions = [
             ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
             ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
+            ['', '', '', '', '', '', 'rb', ''],
+            ['', '', 'bw', '', '', '', '', ''],
             ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', 'kb', '', '', ''],
             ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb'],
-            ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
+            ['rb', 'nb', 'bb', 'qb', '', 'bb', 'nb', 'rb']
         ];
 
        let pieceComponents = [];

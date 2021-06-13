@@ -1,5 +1,3 @@
-import { isCompositeComponent } from "react-dom/test-utils";
-
 export const determineValidPieceMoves = (boardState, row, col) => {
     let pieceToMove = boardState[row][col];
     let pieceType = '';
@@ -225,233 +223,112 @@ const validKingMoves = (pieceColor, boardState, kingPosition, row, col) => {
 
 const validDiagonalMoves = (pieceType, pieceColor, boardState, kingPosition, row, col) => {
     let validMoves = [];
-    let maxMove = false;
-    let inCheck = false;
-    let x = col + 1;
-    let y = row + 1;
 
-    while (maxMove === false && x <= 7 && y <= 7) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, 1, 1).forEach(move => {
+        validMoves.push(move);
+    });
 
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-        console.log(inCheck);
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, 1, -1).forEach(move => {
+        validMoves.push(move);
+    });
 
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, -1, 1).forEach(move => {
+        validMoves.push(move);
+    });
 
-        x++;
-        y++;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col + 1;
-    y = row - 1;
-    while (maxMove === false && x <= 7 && y >= 0) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        x++;
-        y--;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col - 1;
-    y = row + 1;
-    while (maxMove === false && x >= 0 && y <= 7) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        x--;
-        y++;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col - 1;
-    y = row - 1;
-    while (maxMove === false && x >= 0 && y >= 0) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        x--;
-        y--;
-    }
-
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, -1, -1).forEach(move => {
+        validMoves.push(move);
+    });
 
     return validMoves;
 }
 
 
 const validHorizontalVerticalMoves = (pieceType, pieceColor, boardState, kingPosition, row, col) => {
+
+    let validMoves = [];
+
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, 0, 1).forEach(move => {
+        validMoves.push(move);
+    });
+
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, 0, -1).forEach(move => {
+        validMoves.push(move);
+    });
+
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, 1, 0).forEach(move => {
+        validMoves.push(move);
+    });
+
+    validDirectionalMoves(boardState, kingPosition, pieceType, pieceColor, row, col, -1, 0).forEach(move => {
+        validMoves.push(move);
+    });
+
+    return validMoves;
+}
+
+const validDirectionalMoves = (boardState, kingPosition, pieceType, pieceColor, row, col, xIter, yIter) => {
+    const startPosition = {row: row, col: col};
     let validMoves = [];
     let maxMove = false;
-    let inCheck = false;
-    let x = col;
-    let y = row + 1;
+    let moveValid = false;
+    let moveDetail = {};
+    let x = col + xIter;
+    let y = row + yIter;
 
-    while (maxMove === false && y <= 7) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
+    while (maxMove === false && x >= 0 && x <= 7 && y >= 0 && y <= 7) {
+        let movePosition = {row: y, col: x};
 
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
+        ({moveValid, maxMove, moveDetail} = evaluateMove(boardState, kingPosition, pieceType, pieceColor, startPosition, movePosition));
 
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
+        if (moveValid) {
+            validMoves.push(moveDetail);
         }
 
-        y++;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col;
-    y = row - 1;
-    while (maxMove === false && y >= 0) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        y--;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col + 1;
-    y = row;
-    while (maxMove === false && x <= 7) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        x++;
-    }
-
-    maxMove = false;
-    inCheck = false;
-    x = col - 1;
-    y = row;
-    while (maxMove === false && x >= 0) {
-        let square = boardState[y][x];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
-        newBoardState[row][col] = '';
-        newBoardState[y][x] = pieceType + pieceColor.charAt(0);
-
-        inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
-
-        if (!inCheck && square === '') {
-            validMoves.push({row: y, col: x, type: 'move'});
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
-            validMoves.push({row: y, col: x, type: 'capture'});
-            maxMove = true;
-        }
-        else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
-            maxMove = true;
-        }
-
-        x--;
+        x += xIter;
+        y += yIter;
     }
 
     return validMoves;
 }
 
-const isMoveValid = () => {
-    return false;
+
+const evaluateMove = (boardState, kingPosition, pieceType, pieceColor, startPosition, movePosition) => {
+    let startRow = startPosition.row;
+    let startCol = startPosition.col;
+    let x = movePosition.col;
+    let y = movePosition.row;
+    let square = boardState[y][x];
+    let newBoardState = JSON.parse(JSON.stringify(boardState));
+    let inCheck = false;
+    let moveValid = false;
+    let maxMove = false;
+    let moveDetail = {};
+
+    if (x === kingPosition.col && y === kingPosition.row) {
+        return {moveValid: false, maxMove: true, moveDetail: {}};
+    }
+
+    newBoardState[startRow][startCol] = '';
+    newBoardState[y][x] = pieceType + pieceColor.charAt(0);
+
+    inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
+
+    if (!inCheck && square === '') {
+        moveValid = true;
+        moveDetail = {row: y, col: x, type: 'move'};
+    }
+    else if (!inCheck && square !== '' && square.charAt(1) !== pieceColor) {
+        moveValid = true;
+        maxMove = true;
+
+        moveDetail = {row: y, col: x, type: 'capture'};
+    }
+    else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
+        maxMove = true;
+    }
+
+    return {moveValid: moveValid, maxMove: maxMove, moveDetail: moveDetail};
 }
 
 export const getKingPosition = (pieceColor, boardState) => {
@@ -467,11 +344,14 @@ export const getKingPosition = (pieceColor, boardState) => {
                 row = row_index;
                 col = col_index;
             }
+
+            return kingFound;
         });
     });
 
     return {row: row, col: col};
 }
+
 
 export const isKingInCheck = (kingPosition, kingColor, boardState) => {
     let row = kingPosition.row;
