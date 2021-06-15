@@ -58,7 +58,7 @@ class Chessboard extends React.Component {
             gameState: {
                 white: {
                     inCheck: false,
-                    enPassantablePawn: {},
+                    enPassantablePawn: {row: 3, col: 4},
                     kingMoved: false,
                     kingsRookMoved: false,
                     queensRookMoved: false

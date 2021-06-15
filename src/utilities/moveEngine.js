@@ -130,7 +130,6 @@ const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, co
     
             let enPassPawnRow = enPassantablePawn.row;
             let enPassPawnCol = enPassantablePawn.col;
-            let square = boardState[move.r][move.c];
             let newBoardState = JSON.parse(JSON.stringify(boardState));
             let inCheck = false;
 
@@ -230,9 +229,6 @@ const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, co
         {r: row + 1, c: col}, 
     ];
 
-    let castleKingSide = {r: row, c: col + 2};
-    let castleQueenSide = {r: row, c: col - 2};
-
     let sideColor = (pieceColor === 'w') ? 'white' : 'black';
 
     possibleMoves.forEach(move => {
@@ -292,13 +288,12 @@ const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, co
             }
         }
         
-        if (gameState[sideColor].queenssRookMoved === false) {
+        if (gameState[sideColor].queensRookMoved === false) {
             let queenSquare = boardState[row][3];
             let bishopSquare = boardState[row][2];
             let knightSquare = boardState[row][1];
             let inCheckAtQueenSquare = false;
             let inCheckAtBishopSquare = false;
-            let inCheckAtKnightSquare = false;
             let inCheckAfterCastle = false;
 
             if (queenSquare === '' && bishopSquare === '' && knightSquare === '') {
@@ -320,7 +315,7 @@ const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, co
                 inCheckAfterCastle = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtBishopSquare2);
 
                 if (inCheckAtQueenSquare === false && inCheckAtBishopSquare === false && inCheckAfterCastle === false) {
-                    validMoves.push({row: row, col: 6, type: 'move', subType: 'castleQueenSide'});
+                    validMoves.push({row: row, col: 2, type: 'move', subType: 'castleQueenSide'});
                 }
             }
         }
