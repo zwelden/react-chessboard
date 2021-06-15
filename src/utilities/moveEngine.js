@@ -37,7 +37,7 @@ export const determineValidPieceMoves = (gameState, boardState, row, col) => {
             break;
 
         case 'k':
-            validMoves = validKingMoves(gameState, pieceColor, boardState, kingPosition, row, col);
+            validMoves = validKingMoves(gameState, pieceColor, boardState, row, col);
             break;
         
         
@@ -216,7 +216,7 @@ const validQueenMoves = (pieceColor, boardState, kingPosition, row, col) => {
 }
 
 
-const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, col) => {
+const validKingMoves = (gameState, pieceColor, boardState, row, col) => {
     let validMoves = [];
     let possibleMoves = [
         {r: row + 1, c: col + 1}, 
@@ -257,71 +257,114 @@ const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, co
     });
 
     if (gameState[sideColor].inCheck === false && gameState[sideColor].kingMoved === false) {
+        let canCastle = false;
+
         if (gameState[sideColor].kingsRookMoved === false) {
-            let bishopSquare = boardState[row][5];
-            let knightSquare = boardState[row][6];
-            let inCheckAtBishopSquare = false;
-            let inCheckAtKnightSquare = false;
-            let inCheckAfterCastle = false;
+            canCastle = canCastleKingSide(pieceColor, boardState);
 
-            if (bishopSquare === '' && knightSquare === '') {
-                let newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
-                let newBoardStateAtKnightSquare = JSON.parse(JSON.stringify(boardState));  
-                let newBoardStateAtKnightSquare2 = JSON.parse(JSON.stringify(boardState));  
-
-                newBoardStateAtBishopSquare[row][4] = '';
-                newBoardStateAtBishopSquare[row][5] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtKnightSquare[row][4] = '';
-                newBoardStateAtKnightSquare[row][6] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtKnightSquare2[row][4] = '';
-                newBoardStateAtKnightSquare2[row][6] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtKnightSquare2[row][5] = 'r' + pieceColor.charAt(0);
-                newBoardStateAtKnightSquare2[row][7] = '';
-
-                inCheckAtBishopSquare = isKingInCheck({row: row, col: 5}, pieceColor, newBoardStateAtBishopSquare);
-                inCheckAtKnightSquare = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtKnightSquare);
-                inCheckAfterCastle = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtKnightSquare2);
-
-                if (inCheckAtBishopSquare === false && inCheckAtKnightSquare === false && inCheckAfterCastle === false) {
-                    validMoves.push({row: row, col: 6, type: 'move', subType: 'castleKingSide'});
-                }
+            if (canCastle) {
+                validMoves.push({row: row, col: 6, type: 'move', subType: 'castleKingSide'});
             }
         }
         
         if (gameState[sideColor].queensRookMoved === false) {
-            let queenSquare = boardState[row][3];
-            let bishopSquare = boardState[row][2];
-            let knightSquare = boardState[row][1];
-            let inCheckAtQueenSquare = false;
-            let inCheckAtBishopSquare = false;
-            let inCheckAfterCastle = false;
+            canCastle = canCastleQueenSide(pieceColor, boardState);
 
-            if (queenSquare === '' && bishopSquare === '' && knightSquare === '') {
-                let newBoardStateAtQueenSquare = JSON.parse(JSON.stringify(boardState));  
-                let newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
-                let newBoardStateAtBishopSquare2 = JSON.parse(JSON.stringify(boardState));  
-
-                newBoardStateAtQueenSquare[row][4] = '';
-                newBoardStateAtQueenSquare[row][3] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtBishopSquare[row][4] = '';
-                newBoardStateAtBishopSquare[row][2] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtBishopSquare2[row][4] = '';
-                newBoardStateAtBishopSquare2[row][2] = 'k' + pieceColor.charAt(0);
-                newBoardStateAtBishopSquare2[row][3] = 'r' + pieceColor.charAt(0);
-                newBoardStateAtBishopSquare2[row][0] = '';
-
-                inCheckAtQueenSquare = isKingInCheck({row: row, col: 5}, pieceColor, newBoardStateAtQueenSquare);
-                inCheckAtBishopSquare = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtBishopSquare);
-                inCheckAfterCastle = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtBishopSquare2);
-
-                if (inCheckAtQueenSquare === false && inCheckAtBishopSquare === false && inCheckAfterCastle === false) {
-                    validMoves.push({row: row, col: 2, type: 'move', subType: 'castleQueenSide'});
-                }
+            if (canCastle) {
+                validMoves.push({row: row, col: 2, type: 'move', subType: 'castleQueenSide'});
             }
         }
     }
 
     return validMoves;
+}
+
+const canCastleKingSide = (kingColor, boardState) => {
+    let row = (kingColor === 'w') ? 0 : 7;
+    let bishopSquare = boardState[row][5];
+    let knightSquare = boardState[row][6];
+    let inCheckAtBishopSquare = false;
+    let inCheckAtKnightSquare = false;
+    let inCheckAfterCastle = false;
+    let newBoardStateAtBishopSquare = {}
+    let newBoardStateAtKnightSquare = {};
+    let newBoardStateAtKnightSquare2 = {};
+
+    if (bishopSquare !== '' || knightSquare !== '') {
+        return false;
+    }
+
+    newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare[row][4] = '';
+    newBoardStateAtBishopSquare[row][5] = 'k' + kingColor;
+    inCheckAtBishopSquare = isKingInCheck({row: row, col: 5}, kingColor, newBoardStateAtBishopSquare);
+
+    if (inCheckAtBishopSquare === true) {
+        return false;
+    }
+
+    newBoardStateAtKnightSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtKnightSquare[row][4] = '';
+    newBoardStateAtKnightSquare[row][6] = 'k' + kingColor;
+    inCheckAtKnightSquare = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtKnightSquare);
+
+    if (inCheckAtKnightSquare === true) {
+        return false;
+    }
+
+    newBoardStateAtKnightSquare2 = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtKnightSquare2[row][4] = '';
+    newBoardStateAtKnightSquare2[row][6] = 'k' + kingColor;
+    newBoardStateAtKnightSquare2[row][5] = 'r' + kingColor;
+    newBoardStateAtKnightSquare2[row][7] = '';
+    inCheckAfterCastle = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtKnightSquare2);
+
+    return !inCheckAfterCastle;
+}
+
+
+const canCastleQueenSide = (kingColor, boardState) => {
+    let row = (kingColor === 'w') ? 0 : 7;
+    let queenSquare = boardState[row][3];
+    let bishopSquare = boardState[row][2];
+    let knightSquare = boardState[row][1];
+    let inCheckAtQueenSquare = false;
+    let inCheckAtBishopSquare = false;
+    let inCheckAfterCastle = false;
+    let newBoardStateAtQueenSquare = {};  
+    let newBoardStateAtBishopSquare = {};  
+    let newBoardStateAtBishopSquare2 = {};  
+
+    if (queenSquare !== '' || bishopSquare !== '' || knightSquare !== '') {
+        return false;
+    }
+
+    newBoardStateAtQueenSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtQueenSquare[row][4] = '';
+    newBoardStateAtQueenSquare[row][3] = 'k' + kingColor;
+    inCheckAtQueenSquare = isKingInCheck({row: row, col: 5}, kingColor, newBoardStateAtQueenSquare);
+
+    if (inCheckAtQueenSquare === true) {
+        return false;
+    }
+
+    newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare[row][4] = '';
+    newBoardStateAtBishopSquare[row][2] = 'k' + kingColor;
+    inCheckAtBishopSquare = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtBishopSquare);
+
+    if (inCheckAtBishopSquare === true) {
+        return false;
+    }
+
+    newBoardStateAtBishopSquare2 = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare2[row][4] = '';
+    newBoardStateAtBishopSquare2[row][2] = 'k' + kingColor;
+    newBoardStateAtBishopSquare2[row][3] = 'r' + kingColor;
+    newBoardStateAtBishopSquare2[row][0] = '';
+    inCheckAfterCastle = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtBishopSquare2);
+
+    return !inCheckAfterCastle;
 }
 
 
@@ -487,6 +530,11 @@ export const isKingInCheck = (kingPosition, kingColor, boardState) => {
     let checkingPawnPositions = (kingColor === 'w') 
                                 ? checkingBlackPawnPositions 
                                 : checkingWhitePawnPositions;
+            
+    let bishop = 'b' + opponentColor;
+    let rook = 'r' + opponentColor;
+    let queen = 'q' + opponentColor;
+    let checkablePieces = [];
 
     // check knights
     inCheck = checkingKnightPositions.some(coords => {
@@ -499,7 +547,6 @@ export const isKingInCheck = (kingPosition, kingColor, boardState) => {
     });
 
     if (inCheck === true) {
-        console.log('#1');
         return true;
     }
 
@@ -514,197 +561,76 @@ export const isKingInCheck = (kingPosition, kingColor, boardState) => {
     });
 
     if (inCheck === true) {
-        console.log('#2');
         return true;
     }
 
     // check diagonals
-    let maxLookUp = false;
-    let x = col + 1;
-    let y = row + 1;
-    let bishop = 'b' + opponentColor;
-    let rook = 'r' + opponentColor;
-    let queen = 'q' + opponentColor;
- 
-    while (maxLookUp === false && inCheck === false && x <= 7 && y <= 7) {
-        let square = boardState[y][x];
+    checkablePieces = [bishop, queen];
 
-        if (square === bishop || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x++;
-        y++;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, 1, 1);
     if (inCheck === true) {
-        console.log('#3');
         return true;
     }
 
-    maxLookUp = false;
-    x = col + 1;
-    y = row - 1;
-    while (maxLookUp === false && inCheck === false && x <= 7 && y >= 0) {
-        let square = boardState[y][x];
-
-        if (square === bishop || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x++;
-        y--;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, 1, -1);
     if (inCheck === true) {
-        console.log('#4');
         return true;
     }
 
-    maxLookUp = false;
-    x = col - 1;
-    y = row + 1;
-    while (maxLookUp === false && inCheck === false && x >= 0 && y <= 7) {
-        let square = boardState[y][x];
-
-        if (square === bishop || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x--;
-        y++;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, -1, 1);
     if (inCheck === true) {
-        console.log('#5');
         return true;
     }
 
-    maxLookUp = false;
-    x = col - 1;
-    y = row - 1;
-    while (maxLookUp === false && inCheck === false && x >= 0 && y >= 0) {
-        let square = boardState[y][x];
-
-        if (square === bishop || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x--;
-        y--;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, -1, -1);
     if (inCheck === true) {
-        console.log('#6');
         return true;
     }
-
-    
+     
     // check horizontals
-    maxLookUp = false;
-    x = col + 1;
-    y = row;
-    while (maxLookUp === false && inCheck === false && x <= 7) {
-        let square = boardState[y][x];
+    checkablePieces = [rook, queen];
 
-        if (square === rook || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x++;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, 0, 1);
     if (inCheck === true) {
-        console.log('#7');
         return true;
     }
 
-    maxLookUp = false;
-    x = col - 1;
-    y = row;
-    while (maxLookUp === false && inCheck === false && x >= 0) {
-        let square = boardState[y][x];
-
-        if (square === rook || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        x--;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, 0, -1);
     if (inCheck === true) {
-        console.log('#8');
         return true;
     }
 
-    // check verticals
-    maxLookUp = false;
-    x = col;
-    y = row + 1;
-    while (maxLookUp === false && inCheck === false && y <= 7) {
-        let square = boardState[y][x];
-
-        if (square === rook || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        y++;
-    }
-
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, 1, 0);
     if (inCheck === true) {
-        console.log('#9');
         return true;
     }
 
-    maxLookUp = false;
-    x = col;
-    y = row - 1;
-    while (maxLookUp === false && inCheck === false && y >= 0) {
-        let square = boardState[y][x];
+    inCheck = evaluateKingCheckByDirection(boardState, checkablePieces, row, col, -1, 0);
 
-        if (square === rook || square === queen) {
-            maxLookUp = true;
-            inCheck = true;
-        }
-        else if (square !== '') {
-            maxLookUp = true;
-        }
-
-        y--;
-    }
-
-    if (inCheck === true) {
-        console.log('#10');
-        return true;
-    }
-
-    return false;
+    return inCheck;
 }
+
+const evaluateKingCheckByDirection = (boardState, checkablePieces, row, col, xIter, yIter) => {
+    let maxLookUp = false;
+    let inCheck = false;
+    let x = col + xIter;
+    let y = row + yIter;
+ 
+    while (maxLookUp === false && inCheck === false && x >= 0 && x <= 7 && y >= 0 && y <= 7) {
+        let square = boardState[y][x];
+
+        if (checkablePieces.includes(square)) {
+            maxLookUp = true;
+            inCheck = true;
+        }
+        else if (square !== '') {
+            maxLookUp = true;
+        }
+
+        x += xIter;
+        y += yIter;
+    }
+
+   return inCheck;
+}
+

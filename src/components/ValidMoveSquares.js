@@ -2,7 +2,6 @@ import React from 'react';
 
 class ValidMoveSquares extends React.Component {
     render() {
-        console.log(this.props.locations);
         return (
             <React.Fragment>
                 {this.props.locations.map(loc => {
