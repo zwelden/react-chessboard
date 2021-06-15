@@ -1,4 +1,4 @@
-export const determineValidPieceMoves = (boardState, row, col) => {
+export const determineValidPieceMoves = (gameState, boardState, row, col) => {
     let pieceToMove = boardState[row][col];
     let pieceType = '';
     let pieceColor = '';
@@ -17,7 +17,7 @@ export const determineValidPieceMoves = (boardState, row, col) => {
 
     switch (pieceType) {
         case 'p':
-            validMoves = validPawnMoves(pieceColor, boardState, kingPosition, row, col);
+            validMoves = validPawnMoves(gameState, pieceColor, boardState, kingPosition, row, col);
             break;
         
         case 'n':
@@ -37,7 +37,7 @@ export const determineValidPieceMoves = (boardState, row, col) => {
             break;
 
         case 'k':
-            validMoves = validKingMoves(pieceColor, boardState, kingPosition, row, col);
+            validMoves = validKingMoves(gameState, pieceColor, boardState, kingPosition, row, col);
             break;
         
         
@@ -49,14 +49,20 @@ export const determineValidPieceMoves = (boardState, row, col) => {
 }
 
 
-const validPawnMoves = (pieceColor, boardState, kingPosition, row, col) => {
+const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, col) => {
     let validMoves = [];
     let forwardMoves = [];
     let attackMoves = [];
+    let enPassantMoves = [];
+    let enPassantTarget = (pieceColor === 'w') ? 'black' : 'white';
+    let enPassantablePawn = gameState[enPassantTarget].enPassantablePawn;
+    let enPassRowAdjust = (pieceColor === 'w') ? -1 : 1;
+    
 
     if (pieceColor === 'w') {
         forwardMoves = [{r: row + 1, c: col}];
         attackMoves = [{r: row + 1, c: col + 1}, {r: row + 1, c: col - 1}];
+        enPassantMoves = [{r: row + 1, c: col + 1}, {r: row + 1, c: col - 1}];
 
         if (row === 1 && boardState[row + 1][col] === '') {
             forwardMoves.push({r: row + 2, c: col})
@@ -65,6 +71,7 @@ const validPawnMoves = (pieceColor, boardState, kingPosition, row, col) => {
     else {
         forwardMoves = [{r: row - 1, c: col}];
         attackMoves = [{r: row - 1, c: col + 1}, {r: row - 1, c: col - 1}];
+        enPassantMoves = [{r: row - 1, c: col + 1}, {r: row - 1, c: col - 1}];
 
         if (row === 6 && boardState[row - 1][col] === '') {
             forwardMoves.push({r: row - 2, c: col})
@@ -114,6 +121,37 @@ const validPawnMoves = (pieceColor, boardState, kingPosition, row, col) => {
             validMoves.push({row: move.r, col: move.c, type: 'capture'});
         }
     });
+
+    if (enPassantablePawn.hasOwnProperty('row') && enPassantablePawn.hasOwnProperty('col')) {
+        enPassantMoves.forEach(move => {
+            if (move.r < 0 || move.r > 7 || move.c < 0 || move.c > 7) {
+                return;
+            }
+    
+            let enPassPawnRow = enPassantablePawn.row;
+            let enPassPawnCol = enPassantablePawn.col;
+            let square = boardState[move.r][move.c];
+            let newBoardState = JSON.parse(JSON.stringify(boardState));
+            let inCheck = false;
+
+            if (move.r + enPassRowAdjust !== enPassPawnRow || move.c !== enPassPawnCol) {
+                return;
+            }
+
+            newBoardState[row][col] = '';
+            newBoardState[move.r][move.c] = 'p' + pieceColor.charAt(0);
+    
+            inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
+            
+            if (inCheck) {
+                return false;
+            }
+    
+            validMoves.push({row: move.r, col: move.c, type: 'capture', subType: 'enPassant'});
+        })
+    }
+
+    
 
     return validMoves;
 }
@@ -179,7 +217,7 @@ const validQueenMoves = (pieceColor, boardState, kingPosition, row, col) => {
 }
 
 
-const validKingMoves = (pieceColor, boardState, kingPosition, row, col) => {
+const validKingMoves = (gameState, pieceColor, boardState, kingPosition, row, col) => {
     let validMoves = [];
     let possibleMoves = [
         {r: row + 1, c: col + 1}, 
@@ -191,6 +229,11 @@ const validKingMoves = (pieceColor, boardState, kingPosition, row, col) => {
         {r: row + 1, c: col - 1}, 
         {r: row + 1, c: col}, 
     ];
+
+    let castleKingSide = {r: row, c: col + 2};
+    let castleQueenSide = {r: row, c: col - 2};
+
+    let sideColor = (pieceColor === 'w') ? 'white' : 'black';
 
     possibleMoves.forEach(move => {
         if (move.r < 0 || move.r > 7 || move.c < 0 || move.c > 7) {
@@ -216,6 +259,72 @@ const validKingMoves = (pieceColor, boardState, kingPosition, row, col) => {
             validMoves.push({row: move.r, col: move.c, type: 'capture'});
         }
     });
+
+    if (gameState[sideColor].inCheck === false && gameState[sideColor].kingMoved === false) {
+        if (gameState[sideColor].kingsRookMoved === false) {
+            let bishopSquare = boardState[row][5];
+            let knightSquare = boardState[row][6];
+            let inCheckAtBishopSquare = false;
+            let inCheckAtKnightSquare = false;
+            let inCheckAfterCastle = false;
+
+            if (bishopSquare === '' && knightSquare === '') {
+                let newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+                let newBoardStateAtKnightSquare = JSON.parse(JSON.stringify(boardState));  
+                let newBoardStateAtKnightSquare2 = JSON.parse(JSON.stringify(boardState));  
+
+                newBoardStateAtBishopSquare[row][4] = '';
+                newBoardStateAtBishopSquare[row][5] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtKnightSquare[row][4] = '';
+                newBoardStateAtKnightSquare[row][6] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtKnightSquare2[row][4] = '';
+                newBoardStateAtKnightSquare2[row][6] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtKnightSquare2[row][5] = 'r' + pieceColor.charAt(0);
+                newBoardStateAtKnightSquare2[row][7] = '';
+
+                inCheckAtBishopSquare = isKingInCheck({row: row, col: 5}, pieceColor, newBoardStateAtBishopSquare);
+                inCheckAtKnightSquare = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtKnightSquare);
+                inCheckAfterCastle = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtKnightSquare2);
+
+                if (inCheckAtBishopSquare === false && inCheckAtKnightSquare === false && inCheckAfterCastle === false) {
+                    validMoves.push({row: row, col: 6, type: 'move', subType: 'castleKingSide'});
+                }
+            }
+        }
+        
+        if (gameState[sideColor].queenssRookMoved === false) {
+            let queenSquare = boardState[row][3];
+            let bishopSquare = boardState[row][2];
+            let knightSquare = boardState[row][1];
+            let inCheckAtQueenSquare = false;
+            let inCheckAtBishopSquare = false;
+            let inCheckAtKnightSquare = false;
+            let inCheckAfterCastle = false;
+
+            if (queenSquare === '' && bishopSquare === '' && knightSquare === '') {
+                let newBoardStateAtQueenSquare = JSON.parse(JSON.stringify(boardState));  
+                let newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+                let newBoardStateAtBishopSquare2 = JSON.parse(JSON.stringify(boardState));  
+
+                newBoardStateAtQueenSquare[row][4] = '';
+                newBoardStateAtQueenSquare[row][3] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtBishopSquare[row][4] = '';
+                newBoardStateAtBishopSquare[row][2] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtBishopSquare2[row][4] = '';
+                newBoardStateAtBishopSquare2[row][2] = 'k' + pieceColor.charAt(0);
+                newBoardStateAtBishopSquare2[row][3] = 'r' + pieceColor.charAt(0);
+                newBoardStateAtBishopSquare2[row][0] = '';
+
+                inCheckAtQueenSquare = isKingInCheck({row: row, col: 5}, pieceColor, newBoardStateAtQueenSquare);
+                inCheckAtBishopSquare = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtBishopSquare);
+                inCheckAfterCastle = isKingInCheck({row: row, col: 6}, pieceColor, newBoardStateAtBishopSquare2);
+
+                if (inCheckAtQueenSquare === false && inCheckAtBishopSquare === false && inCheckAfterCastle === false) {
+                    validMoves.push({row: row, col: 6, type: 'move', subType: 'castleQueenSide'});
+                }
+            }
+        }
+    }
 
     return validMoves;
 }
