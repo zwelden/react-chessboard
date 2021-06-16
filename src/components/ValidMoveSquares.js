@@ -1,6 +1,7 @@
 import React from 'react';
 
 class ValidMoveSquares extends React.Component {
+
     render() {
         return (
             <React.Fragment>
@@ -10,7 +11,13 @@ class ValidMoveSquares extends React.Component {
                         left: (loc.col * 12.5) + '%'
                     }
 
-                    return (<div key={loc.row + '-' + loc.col} className="valid-move-square" style={style}><div className={'indicator-' + loc.type}></div></div>);
+                    return (<div key={loc.row + '-' + loc.col} 
+                                className="valid-move-square" 
+                                style={style} 
+                                onClick={() => {this.props.selectMoveChoice(loc.row, loc.col)}}>
+                                
+                                <div className={'indicator-' + loc.type}></div>
+                            </div>);
                 })}
             </React.Fragment>
         )
