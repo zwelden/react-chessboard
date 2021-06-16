@@ -133,13 +133,13 @@ class Chessboard extends React.Component {
         newBoardState[oldRow][oldCol] = '';
         newBoardState[toRow][toCol] = piece;
 
-        if (piece.charAt(0) === 'p') {
-            if (
+        if (piece.charAt(0) === 'p'
+            && (
                 (piece.charAt(1) === 'w' && oldRow === 1 && toRow === 3) 
                 || (piece.charAt(1) === 'b' && oldRow === 6 && toRow === 4) 
-            ){
-                enPassantablePawn = {row: toRow, col: toCol}; 
-            }
+            )
+        ) {
+            enPassantablePawn = {row: toRow, col: toCol}; 
         }
 
         if (moveSubType && moveSubType === 'enPassant') {
