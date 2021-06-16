@@ -46,7 +46,7 @@ class Chessboard extends React.Component {
             gameState: {
                 white: {
                     inCheck: false,
-                    enPassantablePawn: {row: 3, col: 4},
+                    enPassantablePawn: {},
                     kingMoved: false,
                     kingsRookMoved: false,
                     queensRookMoved: false
@@ -119,23 +119,51 @@ class Chessboard extends React.Component {
         this.setState({validMoveSquares: [], activePiece: {}});
     }
 
-    selectMoveChoice = (toRow, toCol) => {
+    selectMoveChoice = (toRow, toCol, moveType, moveSubType) => {
         let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
         let oldPosition = this.state.activePiece;
         let oldRow = oldPosition.row;
         let oldCol = oldPosition.col;
         let piece = newBoardState[oldRow][oldCol];
-        let nextPlayer = (this.state.currentPlayer === 'white') ? 'black' : 'white';
+        let currentPlayer = this.state.currentPlayer;
+        let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
+        let currentEnPassantablePawn = this.state.gameState[nextPlayer].enPassantablePawn;
+        let enPassantablePawn = {};
 
         newBoardState[oldRow][oldCol] = '';
         newBoardState[toRow][toCol] = piece;
+
+        if (piece.charAt(0) === 'p') {
+            if (
+                (piece.charAt(1) === 'w' && oldRow === 1 && toRow === 3) 
+                || (piece.charAt(1) === 'b' && oldRow === 6 && toRow === 4) 
+            ){
+                enPassantablePawn = {row: toRow, col: toCol}; 
+            }
+        }
+
+        if (moveSubType && moveSubType === 'enPassant') {
+            newBoardState[currentEnPassantablePawn.row][currentEnPassantablePawn.col] = '';
+        }
+        else if (moveSubType && moveSubType === 'castleKingSide') {
+            newBoardState[toRow][7] = '';
+            newBoardState[toRow][5] = 'r' + piece.charAt(1);
+        }
+        else if (moveSubType && moveSubType === 'castleQueenSide') {
+            newBoardState[toRow][0] = '';
+            newBoardState[toRow][3] = 'r' + piece.charAt(1);
+        }
+
+        this.setState(state => {state.gameState[currentPlayer].enPassantablePawn = enPassantablePawn; return state});
+        this.setState(state => {state.gameState[nextPlayer].enPassantablePawn = {}; return state});
 
         this.setState({
             boardPositions: newBoardState, 
             activePiece: {}, 
             validMoveSquares: [],
             currentPlayer: nextPlayer,
-            pieceComponents: []
+            pieceComponents: [],
+
         }, this.updatePieceComponents);
     }
 
