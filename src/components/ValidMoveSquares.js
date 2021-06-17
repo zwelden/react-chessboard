@@ -6,7 +6,6 @@ class ValidMoveSquares extends React.Component {
         return (
             <React.Fragment>
                 {this.props.locations.map(loc => {
-                    console.log(loc);
                     let style = {
                         top: ((7 - loc.row) * 12.5) + '%',
                         left: (loc.col * 12.5) + '%'

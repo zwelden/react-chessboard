@@ -1,6 +1,21 @@
 .board-wrapper {
     width: 100%;
+    padding-top: 100%;
     position: relative;
+}
+
+.board-square {
+    position: absolute;
+    height: 12.5%;
+    width: 12.5%;
+}
+
+.light-square {
+    background:#ffce9d;
+}
+
+.dark-square {
+    background:#d18a46;
 }
 
 .piece-container svg {
@@ -16,9 +31,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* border: 6px solid #f4ed35;
-    background: #fff83733;
-    border-radius: 4px; */
 }
 
 .valid-move-square .indicator-move {
@@ -40,10 +52,13 @@
 
 .valid-move-square:hover .indicator-move,
 .valid-move-square:hover .indicator-capture {
-    background: rgb(173, 114, 55);
-    opacity: 50%;
+    box-sizing: border-box;
     height: 100%;
     width: 100%;
     border-radius: 0;
     border: none;
+    opacity: 1;
+    background: none;
+    border: 4px solid #f4ed35;
+    box-shadow: inset 0 0 10px #f4ed35;
 }
