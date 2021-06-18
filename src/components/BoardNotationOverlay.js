@@ -28,9 +28,10 @@ class BoardNotationOverlay extends React.Component {
         }
     }
 
-    generateColorClass = (row, col) => {
+    generateColorClass = (orientation, row, col) => {
         let squareType = (row + col) % 2;
-        return (squareType === 1) ? 'light-square-char' : 'dark-square-char';
+        let targetVal = (orientation === 'white') ? 1 : 0;
+        return (squareType === targetVal) ? 'light-square-char' : 'dark-square-char';
     }
 
     render () {
@@ -39,7 +40,7 @@ class BoardNotationOverlay extends React.Component {
                 {this.letters.map((char, index) => {
                     return (<div 
                                 key={index} 
-                                className={'board-notation-item board-notation-letter ' + this.generateColorClass(0, index)}
+                                className={'board-notation-item board-notation-letter ' + this.generateColorClass(this.props.boardOrientation, 0, index)}
                                 style={this.generateStyle(this.props.boardOrientation, 0, index, 'letters')}>
                                 
                                 <div className="board-notation-indicator">
@@ -51,7 +52,7 @@ class BoardNotationOverlay extends React.Component {
                 {this.numbers.map((num, index) => {
                     return (<div 
                                 key={index} 
-                                className={'board-notation-item board-notation-number ' + this.generateColorClass(index, 0)}
+                                className={'board-notation-item board-notation-number ' + this.generateColorClass(this.props.boardOrientation, index, 0)}
                                 style={this.generateStyle(this.props.boardOrientation, index, 0, 'numbers')}>
                                 
                                 <div className="board-notation-indicator">
