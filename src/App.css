@@ -5,8 +5,8 @@
 
 .chessboard-container {
   margin: auto;
-  width: min(85vh, 85vw);
-  width: min(85vh, 85vw);
+  display: flex;
+  justify-content: center;
 }
 
 .chessboard-container .board-wrapper > svg {

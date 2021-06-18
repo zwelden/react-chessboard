@@ -1,7 +1,10 @@
 .board-wrapper {
-    width: 100%;
-    padding-top: 100%;
+    width: min(85vh, 85vw);
+    height: min(85vh, 85vw);
+    overflow: hidden;
+    border-radius: 4px;
     position: relative;
+    box-shadow: 0 4px 10px #cecece;
 }
 
 .board-square {

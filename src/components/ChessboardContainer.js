@@ -3,8 +3,10 @@ import './ChessboardContainer.css';
 
 import {determineValidPieceMoves} from '../utilities/moveEngine.js'
 import Chessboard from './Chessboard';
+import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
 import ValidMoveSquares from './ValidMoveSquares';
+import ActionsContainer from './ActionsContainer';
 
 class ChessboardContainer extends React.Component {
     constructor (props) {
@@ -132,6 +134,7 @@ class ChessboardContainer extends React.Component {
             <React.Fragment>
                 <div className="board-wrapper">
                     <Chessboard />
+                    <BoardNotationOverlay boardOrientation={this.state.boardOrientation} />
                     <ChessboardPieces 
                         boardPositions={this.state.boardPositions} 
                         boardOrientation={this.state.boardOrientation}
@@ -141,7 +144,9 @@ class ChessboardContainer extends React.Component {
                         selectMoveChoice={this.selectMoveChoice} 
                         boardOrientation={this.state.boardOrientation}/>
                 </div>
-                <button onClick={this.flipBoardOrientation}>Flip Board</button>
+                <div className="actions-pane">
+                    <ActionsContainer flipBoardOrientation={this.flipBoardOrientation} />
+                </div>
             </React.Fragment>
         )
     }

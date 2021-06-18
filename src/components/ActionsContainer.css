@@ -1,0 +1,25 @@
+
+.actions-container {
+    margin-left: .5rem;
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+
+.flip-board-button {
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: none;
+    color: #777;
+    padding: .05rem .1rem;
+    cursor: pointer;
+}
+
+.flip-board-button:hover {
+    background: #aaa;
+    color: #fff;
+}
+
+.flip-board-button svg {
+    height: 20px;
+    display: block;
+}

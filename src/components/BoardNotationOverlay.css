@@ -1,0 +1,30 @@
+.board-notation-item  {
+    position: absolute;
+    height: 12.5%;
+    width: 12.5%;
+}
+
+.board-notation-indicator {
+    position: absolute;
+    line-height: 1;
+    color: #555;
+    font-weight: bold;
+}
+
+.board-notation-letter .board-notation-indicator {
+    right: 4px;
+    bottom: 4px;
+}
+
+.board-notation-number .board-notation-indicator {
+    top: 4px;
+    left: 4px;
+}
+
+.light-square-char .board-notation-indicator {
+    color: #d18a46;
+}
+
+.dark-square-char .board-notation-indicator {
+    color: #ffce9d;
+}
