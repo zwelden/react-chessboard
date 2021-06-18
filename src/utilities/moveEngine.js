@@ -428,6 +428,11 @@ const validDirectionalMoves = (boardState, kingPosition, pieceType, pieceColor, 
 
         ({moveValid, maxMove, moveDetail} = evaluateMove(boardState, kingPosition, pieceType, pieceColor, startPosition, movePosition));
 
+        if (xIter === 1 && yIter === 1) {
+            console.log(movePosition);
+            console.log({moveValid, maxMove, moveDetail} )
+        }
+
         if (moveValid) {
             validMoves.push(moveDetail);
         }
@@ -461,7 +466,10 @@ const evaluateMove = (boardState, kingPosition, pieceType, pieceColor, startPosi
 
     inCheck = isKingInCheck(kingPosition, pieceColor, newBoardState);
 
-    if (!inCheck && square === '') {
+    if (square !== '' && square.charAt(1) === pieceColor) {
+        maxMove = true;
+    }
+    else if (!inCheck && square === '') {
         moveValid = true;
         moveDetail = {row: y, col: x, type: 'move'};
     }

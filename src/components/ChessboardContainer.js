@@ -3,28 +3,13 @@ import './ChessboardContainer.css';
 
 import {determineValidPieceMoves} from '../utilities/moveEngine.js'
 import Chessboard from './Chessboard';
-import Piece from './Piece'
+import ChessboardPieces from './ChessboardPieces';
 import ValidMoveSquares from './ValidMoveSquares';
 
 class ChessboardContainer extends React.Component {
     constructor (props) {
         super(props);
 
-        this.pieceMap = {
-            color: {
-                'w': 'white',
-                'b': 'black'
-            },
-            piece: {
-                'r': 'rook',
-                'n': 'knight',
-                'b': 'bishop',
-                'q': 'queen',
-                'k': 'king',
-                'p': 'pawn'
-            }
-        }
-        
         let boardPositions = [
             ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
             ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
@@ -36,14 +21,12 @@ class ChessboardContainer extends React.Component {
             ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
         ];
 
-       let pieceComponents = this.createPieceComponents(boardPositions)
-
         this.state = {
+            boardOrientation: 'white',
             currentPlayer: 'white',
             activePiece: {row: -1, col: -1},
             validMoveSquares: [],
             boardPositions: boardPositions,
-            pieceComponents: pieceComponents,
             gameState: {
                 white: {
                     inCheck: false,
@@ -63,33 +46,9 @@ class ChessboardContainer extends React.Component {
         }
     }
 
-    updatePieceComponents = () => {
-        this.setState({pieceComponents: this.createPieceComponents(this.state.boardPositions)});
-    }
-
-    createPieceComponents = (boardPositions) => {
-        let pieceComponents = [];
-
-        boardPositions.forEach((row, row_index) => {
-            row.forEach((piece, col_index) => {
-                if (piece === '') { return; }
-
-                let pieceType = this.pieceMap.piece[piece.charAt(0)];
-                let pieceColor = this.pieceMap.color[piece.charAt(1)];
-
-                pieceComponents.push((
-                    <Piece 
-                        key={row_index + '-' + col_index} 
-                        color={pieceColor} 
-                        piece={pieceType} 
-                        row={row_index} 
-                        col={col_index} 
-                        determineValidMoves={this.determineValidMoves} />
-                ))
-            });
-        });
-
-        return pieceComponents;
+    flipBoardOrientation = () => {
+        let nextBoardOrientation = (this.state.boardOrientation === 'white') ? 'black' : 'white';
+        this.setState({boardOrientation: nextBoardOrientation});
     }
 
     
@@ -165,7 +124,7 @@ class ChessboardContainer extends React.Component {
             currentPlayer: nextPlayer,
             pieceComponents: [],
 
-        }, this.updatePieceComponents);
+        });
     }
 
     render () {
@@ -173,9 +132,16 @@ class ChessboardContainer extends React.Component {
             <React.Fragment>
                 <div className="board-wrapper">
                     <Chessboard />
-                    {this.state.pieceComponents}
-                    <ValidMoveSquares locations={this.state.validMoveSquares} selectMoveChoice={this.selectMoveChoice} />
+                    <ChessboardPieces 
+                        boardPositions={this.state.boardPositions} 
+                        boardOrientation={this.state.boardOrientation}
+                        determineValidMoves={this.determineValidMoves}/>
+                    <ValidMoveSquares 
+                        locations={this.state.validMoveSquares} 
+                        selectMoveChoice={this.selectMoveChoice} 
+                        boardOrientation={this.state.boardOrientation}/>
                 </div>
+                <button onClick={this.flipBoardOrientation}>Flip Board</button>
             </React.Fragment>
         )
     }

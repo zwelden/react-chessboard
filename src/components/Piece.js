@@ -15,46 +15,43 @@ import {ReactComponent as PawnBlack} from '../assets/img/pawn_black.svg';
 import './Piece.css';
 
 class Piece extends React.Component {
-    constructor(props) {
-        super(props);
-
-        let pieceComponents = {
-            'white': {
-                'king': (<KingWhite />),
-                'queen': (<QueenWhite />),
-                'rook': (<RookWhite />),
-                'bishop': (<BishopWhite />),
-                'knight': (<KnightWhite />),
-                'pawn': (<PawnWhite />)
-            },
-            'black': {
-                'king': (<KingBlack />),
-                'queen': (<QueenBlack />),
-                'rook': (<RookBlack />),
-                'bishop': (<BishopBlack />),
-                'knight': (<KnightBlack />),
-                'pawn': (<PawnBlack />)
-            }
+    pieceComponents = {
+        'white': {
+            'king': (<KingWhite />),
+            'queen': (<QueenWhite />),
+            'rook': (<RookWhite />),
+            'bishop': (<BishopWhite />),
+            'knight': (<KnightWhite />),
+            'pawn': (<PawnWhite />)
+        },
+        'black': {
+            'king': (<KingBlack />),
+            'queen': (<QueenBlack />),
+            'rook': (<RookBlack />),
+            'bishop': (<BishopBlack />),
+            'knight': (<KnightBlack />),
+            'pawn': (<PawnBlack />)
         }
+    }
 
-        this.renderPiece = pieceComponents[this.props.color][this.props.piece];
-        
-        this.state = {
-            postitionStyles: {
-                top: ((7 - this.props.row) * 12.5) + '%',
-                left: (this.props.col * 12.5) + '%'
-            },
-            row: this.props.row,
-            col: this.props.col
+    generateStyle = (orientation, row, col) => {
+        let rowOrientationModifier = (orientation === 'white') ? 7 : 0;
+        let rowMultiplier = (orientation === 'white') ? -1 : 1;
+        let colOrientationModifier = (orientation === 'white') ? 0 : 7;
+        let colMultiplier = (orientation === 'white') ? 1 : -1;
+
+        return {
+            top: ((rowOrientationModifier + (rowMultiplier * row)) * 12.5) + '%',
+            left: ((colOrientationModifier + (colMultiplier * col)) * 12.5) + '%'
         }
     }
 
     render() {
         return (
             <div className="piece-container" 
-                style={this.state.postitionStyles} 
-                onClick={() => this.props.determineValidMoves(this.state.row, this.state.col)}>
-                {this.renderPiece}
+                style={this.generateStyle(this.props.orientation, this.props.row, this.props.col)} 
+                onClick={() => this.props.determineValidMoves(this.props.row, this.props.col)}>
+                {this.pieceComponents[this.props.color][this.props.piece]}
             </div>
         )
     }
