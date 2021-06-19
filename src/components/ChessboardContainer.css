@@ -22,8 +22,8 @@
 }
 
 .piece-container svg {
-    height: 75%;
-    width: 75%;
+    height: 90%;
+    width: 90%;
 }
 
 .valid-move-square {
@@ -46,11 +46,11 @@
 }
 
 .valid-move-square .indicator-capture {
-    height: 75%;
-    width: 75%;
+    height: 80%;
+    width: 80%;
     border-radius: 100%;
     background: rgba(255, 255, 255, .15);
-    border: 6px solid rgba(173, 114, 55, 0.8);
+    border: 5px solid rgba(173, 114, 55, 0.8);
 }
 
 .valid-move-square:hover .indicator-move,

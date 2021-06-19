@@ -428,11 +428,6 @@ const validDirectionalMoves = (boardState, kingPosition, pieceType, pieceColor, 
 
         ({moveValid, maxMove, moveDetail} = evaluateMove(boardState, kingPosition, pieceType, pieceColor, startPosition, movePosition));
 
-        if (xIter === 1 && yIter === 1) {
-            console.log(movePosition);
-            console.log({moveValid, maxMove, moveDetail} )
-        }
-
         if (moveValid) {
             validMoves.push(moveDetail);
         }

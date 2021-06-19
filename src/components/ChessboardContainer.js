@@ -7,6 +7,7 @@ import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
 import ValidMoveSquares from './ValidMoveSquares';
 import ActionsContainer from './ActionsContainer';
+import PawnPromotionOptions from './PawnPromotionOptions';
 
 class ChessboardContainer extends React.Component {
     constructor (props) {
@@ -27,6 +28,8 @@ class ChessboardContainer extends React.Component {
             boardOrientation: 'white',
             currentPlayer: 'white',
             activePiece: {row: -1, col: -1},
+            displayPromotionOptions: false,
+            promoteColumn: -1,
             validMoveSquares: [],
             boardPositions: boardPositions,
             gameState: {
@@ -91,6 +94,8 @@ class ChessboardContainer extends React.Component {
         let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
         let currentEnPassantablePawn = this.state.gameState[nextPlayer].enPassantablePawn;
         let enPassantablePawn = {};
+        let displayPromotionOptions = false;
+        let promoteColumn = -1;
 
         newBoardState[oldRow][oldCol] = '';
         newBoardState[toRow][toCol] = piece;
@@ -116,16 +121,44 @@ class ChessboardContainer extends React.Component {
             newBoardState[toRow][3] = 'r' + piece.charAt(1);
         }
 
+        if (piece.charAt(0) === 'p'
+            && (
+                (piece.charAt(1) === 'w' && toRow === 7) 
+                || (piece.charAt(1) === 'b' && toRow === 0) 
+            )
+        ) {
+            displayPromotionOptions = true;
+            promoteColumn = toCol;
+            nextPlayer = currentPlayer;
+        }
+
         this.setState(state => {state.gameState[currentPlayer].enPassantablePawn = enPassantablePawn; return state});
         this.setState(state => {state.gameState[nextPlayer].enPassantablePawn = {}; return state});
 
         this.setState({
             boardPositions: newBoardState, 
+            displayPromotionOptions: displayPromotionOptions,
+            promoteColumn: promoteColumn,
             activePiece: {}, 
             validMoveSquares: [],
-            currentPlayer: nextPlayer,
-            pieceComponents: [],
+            currentPlayer: nextPlayer
+        });
+    }
 
+    selectPromotionChoice = (newPiece, row, col) => {
+        let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
+        let pieceColor = (this.state.currentPlayer === 'white') ? 'w' : 'b';
+        let nextPlayer = (this.state.currentPlayer === 'white') ? 'black' : 'white';
+        
+        newBoardState[row][col] = newPiece + pieceColor;
+
+        this.setState({
+            boardPositions: newBoardState, 
+            displayPromotionOptions: false,
+            promoteColumn: -1,
+            activePiece: {}, 
+            validMoveSquares: [],
+            currentPlayer: nextPlayer
         });
     }
 
@@ -143,6 +176,13 @@ class ChessboardContainer extends React.Component {
                         locations={this.state.validMoveSquares} 
                         selectMoveChoice={this.selectMoveChoice} 
                         boardOrientation={this.state.boardOrientation}/>
+                    {this.state.displayPromotionOptions && 
+                        <PawnPromotionOptions 
+                            boardOrientation={this.state.boardOrientation} 
+                            col={this.state.promoteColumn}
+                            color={this.state.currentPlayer}
+                            selectPromotionChoice={this.selectPromotionChoice}/>
+                    }
                 </div>
                 <div className="actions-pane">
                     <ActionsContainer flipBoardOrientation={this.flipBoardOrientation} />

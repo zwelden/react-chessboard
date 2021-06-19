@@ -1,0 +1,61 @@
+.promotion-option-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, .5);
+}
+.pawn-propmotion-options {
+    position: absolute;
+    width: 12.5%;
+    height: 50%;
+    box-shadow: 0 4px 10px #989898;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.promotion-option {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+.promotion-option:hover {
+    background: #abc;
+}
+
+.display-at-top .queen-selection {
+    top: 0;
+}
+
+.display-at-top .rook-selection {
+    top: 25%;
+}
+
+.display-at-top .bishop-selection {
+    top: 50%;
+}
+
+.display-at-top .knight-selection {
+    top: 75%;
+}
+
+.display-at-bottom .queen-selection {
+    bottom: 0;
+}
+
+.display-at-bottom .rook-selection {
+    bottom: 25%;
+}
+
+.display-at-bottom .bishop-selection {
+    bottom: 50%;
+}
+
+.display-at-bottom .knight-selection {
+    bottom: 75%;
+}
