@@ -48,11 +48,9 @@ class Piece extends React.Component {
 
     render() {
         let inCheckClass = (this.props.inCheck === true) ? 'in-check' : '';
-        let lastMoveStartClass = (this.props.lastMoveStart === true) ? 'last-move-start' : '';
-        let lastMoveEndClass = (this.props.lastMoveEnd === true) ? 'last-move-end' : '';
 
         return (
-            <div className={"piece-container " + inCheckClass + lastMoveStartClass + lastMoveEndClass}
+            <div className={"piece-container " + inCheckClass}
                 style={this.generateStyle(this.props.orientation, this.props.row, this.props.col)} 
                 onClick={() => this.props.determineValidMoves(this.props.row, this.props.col)}>
                 {this.pieceComponents[this.props.color][this.props.piece]}

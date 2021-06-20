@@ -4,6 +4,17 @@ class Chessboard extends React.Component {
     createBoard = () => {
         let lastMoveStartClass = 'last-move-start';
         let lastMoveEndClass = 'last-move-end';
+        let lastMoveStartRow = this.props.lastMoveStart.row;
+        let lastMoveStartCol = this.props.lastMoveStart.col;
+        let lastMoveEndRow = this.props.lastMoveEnd.row;
+        let lastMoveEndCol = this.props.lastMoveEnd.col;
+
+        if (this.props.boardOrientation === 'black') {
+            lastMoveStartRow = 7 - lastMoveStartRow;
+            lastMoveStartCol = 7 - lastMoveStartCol;
+            lastMoveEndRow = 7 - lastMoveEndRow;
+            lastMoveEndCol = 7 - lastMoveEndCol;
+        }
 
         let boardSquares = [];
         for (let row = 0; row < 8; row++) {
@@ -17,10 +28,10 @@ class Chessboard extends React.Component {
                 let isLastMoveStart = false;
                 let isLastMoveEnd = false;
 
-                if (row === this.props.lastMoveStart.row && col === this.props.lastMoveStart.col) {
+                if (row === lastMoveStartRow && col === lastMoveStartCol) {
                     isLastMoveStart = true;
                 }
-                else if (row === this.props.lastMoveEnd.row && col === this.props.lastMoveEnd.col) {
+                else if (row === lastMoveEndRow && col === lastMoveEndCol) {
                     isLastMoveEnd = true;
                 }
                 

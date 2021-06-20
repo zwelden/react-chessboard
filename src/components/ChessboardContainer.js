@@ -181,6 +181,7 @@ class ChessboardContainer extends React.Component {
                 <div className="board-wrapper">
                     <Chessboard 
                         clearMoveIndicators={this.clearValidMoves}
+                        boardOrientation={this.state.boardOrientation}
                         lastMoveStart={this.state.lastMoveStart}
                         lastMoveEnd={this.state.lastMoveEnd}/>
                     <BoardNotationOverlay boardOrientation={this.state.boardOrientation} />
@@ -189,9 +190,7 @@ class ChessboardContainer extends React.Component {
                         boardOrientation={this.state.boardOrientation}
                         determineValidMoves={this.determineValidMoves}
                         whiteInCheck={this.state.gameState.white.inCheck}
-                        blackInCheck={this.state.gameState.black.inCheck}
-                        lastMoveStart={this.state.lastMoveStart}
-                        lastMoveEnd={this.state.lastMoveEnd}/>
+                        blackInCheck={this.state.gameState.black.inCheck}/>
                     <ValidMoveSquares 
                         locations={this.state.validMoveSquares} 
                         selectMoveChoice={this.selectMoveChoice} 
