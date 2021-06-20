@@ -42,6 +42,8 @@ class ChessboardPieces extends React.Component {
     render () {
         let wInCheck = this.props.whiteInCheck;
         let bInCheck = this.props.blackInCheck;
+        let lastMoveStart = this.props.lastMoveStart;
+        let lastMoveEnd = this.props.lastMoveEnd;
         let inCheckColor = '';
 
         if (wInCheck) {
@@ -61,6 +63,8 @@ class ChessboardPieces extends React.Component {
                     piece={piece.type} 
                     row={piece.row} 
                     col={piece.col} 
+                    lastMoveStart={(piece.row === lastMoveStart.row && piece.col === lastMoveStart.col)}
+                    lastMoveEnd={(piece.row === lastMoveEnd.row && piece.col === lastMoveEnd.col)}
                     inCheck={(piece.type === 'king' && piece.color === inCheckColor)}
                     determineValidMoves={this.props.determineValidMoves} />
                 )}  

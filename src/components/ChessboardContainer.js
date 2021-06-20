@@ -28,6 +28,8 @@ class ChessboardContainer extends React.Component {
             boardOrientation: 'white',
             currentPlayer: 'white',
             activePiece: {row: -1, col: -1},
+            lastMoveStart: {row: -1, col: -1},
+            lastMoveEnd: {row: -1, col: -1},
             displayPromotionOptions: false,
             promoteColumn: -1,
             validMoveSquares: [],
@@ -141,6 +143,8 @@ class ChessboardContainer extends React.Component {
             displayPromotionOptions: displayPromotionOptions,
             promoteColumn: promoteColumn,
             activePiece: {}, 
+            lastMoveStart: {row: oldRow, col: oldCol},
+            lastMoveEnd: {row: toRow, col: toCol},
             validMoveSquares: [],
             currentPlayer: nextPlayer
         });
@@ -175,14 +179,19 @@ class ChessboardContainer extends React.Component {
         return (
             <React.Fragment>
                 <div className="board-wrapper">
-                    <Chessboard />
+                    <Chessboard 
+                        clearMoveIndicators={this.clearValidMoves}
+                        lastMoveStart={this.state.lastMoveStart}
+                        lastMoveEnd={this.state.lastMoveEnd}/>
                     <BoardNotationOverlay boardOrientation={this.state.boardOrientation} />
                     <ChessboardPieces 
                         boardPositions={this.state.boardPositions} 
                         boardOrientation={this.state.boardOrientation}
                         determineValidMoves={this.determineValidMoves}
                         whiteInCheck={this.state.gameState.white.inCheck}
-                        blackInCheck={this.state.gameState.black.inCheck}/>
+                        blackInCheck={this.state.gameState.black.inCheck}
+                        lastMoveStart={this.state.lastMoveStart}
+                        lastMoveEnd={this.state.lastMoveEnd}/>
                     <ValidMoveSquares 
                         locations={this.state.validMoveSquares} 
                         selectMoveChoice={this.selectMoveChoice} 
