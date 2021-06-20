@@ -1,7 +1,7 @@
 import React from 'react';
 import './ChessboardContainer.css';
 
-import {determineValidPieceMoves} from '../utilities/moveEngine.js'
+import {determineValidPieceMoves, getKingPosition, isKingInCheck} from '../utilities/moveEngine.js'
 import Chessboard from './Chessboard';
 import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
@@ -133,8 +133,9 @@ class ChessboardContainer extends React.Component {
         }
 
         this.setState(state => {state.gameState[currentPlayer].enPassantablePawn = enPassantablePawn; return state});
+        this.setState(state => {state.gameState[currentPlayer].inCheck = false; return state});
         this.setState(state => {state.gameState[nextPlayer].enPassantablePawn = {}; return state});
-
+        
         this.setState({
             boardPositions: newBoardState, 
             displayPromotionOptions: displayPromotionOptions,
@@ -143,6 +144,14 @@ class ChessboardContainer extends React.Component {
             validMoveSquares: [],
             currentPlayer: nextPlayer
         });
+
+        let nextPlayerColor = nextPlayer.charAt(0);
+        let kingPosition = getKingPosition(nextPlayerColor, newBoardState);
+        let nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
+
+        if (nextPlayerInCheck) {
+            this.setState(state => {state.gameState[nextPlayer].inCheck = true; return state});
+        }
     }
 
     selectPromotionChoice = (newPiece, row, col) => {
@@ -171,7 +180,9 @@ class ChessboardContainer extends React.Component {
                     <ChessboardPieces 
                         boardPositions={this.state.boardPositions} 
                         boardOrientation={this.state.boardOrientation}
-                        determineValidMoves={this.determineValidMoves}/>
+                        determineValidMoves={this.determineValidMoves}
+                        whiteInCheck={this.state.gameState.white.inCheck}
+                        blackInCheck={this.state.gameState.black.inCheck}/>
                     <ValidMoveSquares 
                         locations={this.state.validMoveSquares} 
                         selectMoveChoice={this.selectMoveChoice} 

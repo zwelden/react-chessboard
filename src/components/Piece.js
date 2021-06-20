@@ -47,8 +47,10 @@ class Piece extends React.Component {
     }
 
     render() {
+        let inCheckClass = (this.props.inCheck === true) ? 'in-check' : '';
+        
         return (
-            <div className="piece-container" 
+            <div className={"piece-container " + inCheckClass}
                 style={this.generateStyle(this.props.orientation, this.props.row, this.props.col)} 
                 onClick={() => this.props.determineValidMoves(this.props.row, this.props.col)}>
                 {this.pieceComponents[this.props.color][this.props.piece]}

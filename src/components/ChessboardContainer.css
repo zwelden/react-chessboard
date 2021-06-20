@@ -26,6 +26,12 @@
     width: 90%;
 }
 
+.piece-container.in-check {
+    box-sizing: border-box;
+    border: 2px solid #cc0000;
+    box-shadow: inset 0 0 10px #cc0000;
+}
+
 .valid-move-square {
     position: absolute;
     box-sizing: border-box;

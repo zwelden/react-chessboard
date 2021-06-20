@@ -40,6 +40,17 @@ class ChessboardPieces extends React.Component {
     }
 
     render () {
+        let wInCheck = this.props.whiteInCheck;
+        let bInCheck = this.props.blackInCheck;
+        let inCheckColor = '';
+
+        if (wInCheck) {
+            inCheckColor = 'white';
+        } 
+        else if (bInCheck) {
+            inCheckColor = 'black';
+        }
+
         return (
             <React.Fragment>
                 {this.createPieceComponents(this.props.boardPositions).map(piece => 
@@ -50,6 +61,7 @@ class ChessboardPieces extends React.Component {
                     piece={piece.type} 
                     row={piece.row} 
                     col={piece.col} 
+                    inCheck={(piece.type === 'king' && piece.color === inCheckColor)}
                     determineValidMoves={this.props.determineValidMoves} />
                 )}  
             </React.Fragment>
