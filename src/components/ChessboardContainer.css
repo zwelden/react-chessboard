@@ -54,9 +54,8 @@
     height: 30%;
     width: 30%;
     border-radius: 100%;
-    background: #6b99b5;
     background: rgb(173, 114, 55);
-    opacity: 70%;
+    opacity: .7;
 }
 
 .valid-move-square .indicator-capture {
