@@ -1,13 +1,14 @@
 import React from 'react';
 import './ChessboardContainer.css';
 
-import {determineValidPieceMoves, getKingPosition, isKingInCheck} from '../utilities/moveEngine.js'
+import {determineValidPieceMoves, getKingPosition, isKingInCheck, playerHasValidMoves, getAllPieceCoordsByColor} from '../utilities/moveEngine.js'
 import Chessboard from './Chessboard';
 import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
 import ValidMoveSquares from './ValidMoveSquares';
 import ActionsContainer from './ActionsContainer';
 import PawnPromotionOptions from './PawnPromotionOptions';
+import EndOfGameDisplay from './EndOfGameDisplay';
 
 class ChessboardContainer extends React.Component {
     constructor (props) {
@@ -25,6 +26,9 @@ class ChessboardContainer extends React.Component {
         ];
 
         this.state = {
+            gameOver: false,
+            outcome: '',
+            winner: '',
             boardOrientation: 'white',
             currentPlayer: 'white',
             activePiece: {row: -1, col: -1},
@@ -86,6 +90,52 @@ class ChessboardContainer extends React.Component {
         this.setState({validMoveSquares: [], activePiece: {}});
     }
 
+
+    evaluateIfEndOfGame = (boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck) => {
+        let isEndOfGame = false;
+        let nextPlayerPieces = getAllPieceCoordsByColor(boardState, nextPlayerColor);
+        let currentPlayerPieces = [];
+        let nextPlayerHasAvaliableMove;
+
+        if (nextPlayerPieces.length === 1) {
+            currentPlayerPieces = getAllPieceCoordsByColor(boardState, currentPlayer.charAt(0));
+
+            if (currentPlayerPieces.length === 1) {
+                this.setState({
+                    gameOver: true,
+                    outcome: 'draw',
+                    winner: '',
+                });
+
+                isEndOfGame = true;
+            }
+        }
+
+        nextPlayerHasAvaliableMove = playerHasValidMoves(this.state.gameState, boardState, nextPlayerPieces);
+
+        if (isEndOfGame === false && nextPlayerHasAvaliableMove === false) {
+            isEndOfGame = true;
+
+            if (nextPlayerInCheck === true) {
+                this.setState({
+                    gameOver: true,
+                    outcome: 'checkmate',
+                    winner: currentPlayer,
+                });
+            }
+            else {
+                this.setState({
+                    gameOver: true,
+                    outcome: 'stalemate',
+                    winner: '',
+                });  
+            }
+        }
+        
+        return isEndOfGame;
+    }
+
+
     selectMoveChoice = (toRow, toCol, moveType, moveSubType) => {
         let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
         let oldPosition = this.state.activePiece;
@@ -98,6 +148,9 @@ class ChessboardContainer extends React.Component {
         let enPassantablePawn = {};
         let displayPromotionOptions = false;
         let promoteColumn = -1;
+        let nextPlayerColor;
+        let kingPosition;
+        let nextPlayerInCheck;
 
         newBoardState[oldRow][oldCol] = '';
         newBoardState[toRow][toCol] = piece;
@@ -134,6 +187,29 @@ class ChessboardContainer extends React.Component {
             nextPlayer = currentPlayer;
         }
 
+        if (piece.charAt(0) === 'k' 
+            && (
+                (piece.charAt(1) === 'w' && oldRow === 0)
+                || (piece.charAt(1) === 'b' && oldRow === 7)
+            )
+        ) {
+            this.setState(state => {state.gameState[currentPlayer].kingMoved = true; return state});
+        }
+
+        if (piece.charAt(0) === 'r' 
+            && (
+                (piece.charAt(1) === 'w' && oldRow === 0)
+                || (piece.charAt(1) === 'b' && oldRow === 7)
+            )
+        ) {
+            if (oldCol === 0) {
+                this.setState(state => {state.gameState[currentPlayer].queensRookMoved = true; return state});
+            }
+            else if (oldCol === 7) {
+                this.setState(state => {state.gameState[currentPlayer].kingsRookMoved = true; return state});
+            }
+        }
+
         this.setState(state => {state.gameState[currentPlayer].enPassantablePawn = enPassantablePawn; return state});
         this.setState(state => {state.gameState[currentPlayer].inCheck = false; return state});
         this.setState(state => {state.gameState[nextPlayer].enPassantablePawn = {}; return state});
@@ -149,19 +225,29 @@ class ChessboardContainer extends React.Component {
             currentPlayer: nextPlayer
         });
 
-        let nextPlayerColor = nextPlayer.charAt(0);
-        let kingPosition = getKingPosition(nextPlayerColor, newBoardState);
-        let nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
+        if (displayPromotionOptions === true) {
+            return;
+        }
 
-        if (nextPlayerInCheck) {
+        nextPlayerColor = nextPlayer.charAt(0);
+        kingPosition = getKingPosition(nextPlayerColor, newBoardState);
+        nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
+
+        if (nextPlayerInCheck === true) {
             this.setState(state => {state.gameState[nextPlayer].inCheck = true; return state});
         }
+
+        this.evaluateIfEndOfGame(newBoardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
     }
 
     selectPromotionChoice = (newPiece, row, col) => {
         let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
-        let pieceColor = (this.state.currentPlayer === 'white') ? 'w' : 'b';
-        let nextPlayer = (this.state.currentPlayer === 'white') ? 'black' : 'white';
+        let currentPlayer = this.state.currentPlayer;
+        let pieceColor = (currentPlayer === 'white') ? 'w' : 'b';
+        let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
+        let nextPlayerColor = nextPlayer.charAt(0);
+        let kingPosition;
+        let nextPlayerInCheck;
         
         newBoardState[row][col] = newPiece + pieceColor;
 
@@ -173,7 +259,19 @@ class ChessboardContainer extends React.Component {
             validMoveSquares: [],
             currentPlayer: nextPlayer
         });
+
+        nextPlayerColor = nextPlayer.charAt(0);
+        kingPosition = getKingPosition(nextPlayerColor, newBoardState);
+        nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
+
+        if (nextPlayerInCheck === true) {
+            this.setState(state => {state.gameState[nextPlayer].inCheck = true; return state});
+        }
+
+        this.evaluateIfEndOfGame(newBoardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
     }
+
+    
 
     render () {
         return (
@@ -201,6 +299,9 @@ class ChessboardContainer extends React.Component {
                             col={this.state.promoteColumn}
                             color={this.state.currentPlayer}
                             selectPromotionChoice={this.selectPromotionChoice}/>
+                    }
+                    {this.state.gameOver && 
+                        <EndOfGameDisplay endType={this.state.outcome} winner={this.state.winner}/>
                     }
                 </div>
                 <div className="actions-pane">

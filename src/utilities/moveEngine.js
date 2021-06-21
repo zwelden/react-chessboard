@@ -477,6 +477,9 @@ const evaluateMove = (boardState, kingPosition, pieceType, pieceColor, startPosi
     else if (!inCheck && square !== '' && square.charAt(1) === pieceColor) {
         maxMove = true;
     }
+    else if (square !== '') {
+        maxMove = true;
+    }
 
     return {moveValid: moveValid, maxMove: maxMove, moveDetail: moveDetail};
 }
@@ -637,3 +640,33 @@ const evaluateKingCheckByDirection = (boardState, checkablePieces, row, col, xIt
    return inCheck;
 }
 
+export const playerHasValidMoves = (gameState, boardState, pieces) => {
+    let hasValidMoves = false;
+
+    pieces.some(piece => {
+        let validMoves = determineValidPieceMoves(gameState, boardState, piece.row, piece.col);
+
+        if (validMoves.length > 0) {
+            hasValidMoves = true;
+            return true;
+        }
+        
+        return false;
+    });
+    
+    return hasValidMoves;
+}
+
+export const getAllPieceCoordsByColor = (boardState, color) => {
+    let pieces = [];
+    
+    boardState.forEach((row, row_index) => {
+        row.forEach((piece, col_index) => {
+            if (piece.charAt(1) === color) {
+                pieces.push({piece: piece, row: row_index, col: col_index});
+            }
+        });
+    });
+
+    return pieces;
+}
