@@ -1,22 +1,24 @@
 import React from 'react';
+import './Chessboard.css';
 
-class Chessboard extends React.Component {
-    createBoard = () => {
-        let lastMoveStartClass = 'last-move-start';
-        let lastMoveEndClass = 'last-move-end';
-        let lastMoveStartRow = this.props.lastMoveStart.row;
-        let lastMoveStartCol = this.props.lastMoveStart.col;
-        let lastMoveEndRow = this.props.lastMoveEnd.row;
-        let lastMoveEndCol = this.props.lastMoveEnd.col;
+const Chessboard = ({lastMoveStart, lastMoveEnd, boardOrientation, clearMoveIndicators}) => {
+    const createBoard = () => {
+        const lastMoveStartClass = 'last-move-start';
+        const lastMoveEndClass = 'last-move-end';
+        let lastMoveStartRow = lastMoveStart.row;
+        let lastMoveStartCol = lastMoveStart.col;
+        let lastMoveEndRow = lastMoveEnd.row;
+        let lastMoveEndCol = lastMoveEnd.col;
+        let boardSquares = [];
 
-        if (this.props.boardOrientation === 'black') {
+        if (boardOrientation === 'black') {
             lastMoveStartRow = 7 - lastMoveStartRow;
             lastMoveStartCol = 7 - lastMoveStartCol;
             lastMoveEndRow = 7 - lastMoveEndRow;
             lastMoveEndCol = 7 - lastMoveEndCol;
         }
 
-        let boardSquares = [];
+        
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 let squareType = (row + col) % 2;
@@ -35,16 +37,19 @@ class Chessboard extends React.Component {
                     isLastMoveEnd = true;
                 }
                 
-
                 boardSquares.push((
                     <div 
                         key={row + '-' + col} 
                         className={'board-square ' + colorClass} 
                         style={style} 
-                        onClick={this.props.clearMoveIndicators}>
-                        
-                        {isLastMoveStart && <div className={"move-history-square " + lastMoveStartClass}></div>}
-                        {isLastMoveEnd && <div className={"move-history-square " + lastMoveEndClass}></div>}
+                        onClick={clearMoveIndicators}
+                    >
+                        {isLastMoveStart && 
+                            <div className={"move-history-square " + lastMoveStartClass}></div>
+                        }
+                        {isLastMoveEnd && 
+                            <div className={"move-history-square " + lastMoveEndClass}></div>
+                        }
                     </div>
                 ));
             }
@@ -53,13 +58,11 @@ class Chessboard extends React.Component {
         return boardSquares;
     }
 
-    render () {
-        return (
-            <React.Fragment>
-                {this.createBoard()}
-            </React.Fragment>
-        );
-    }
+    return (
+        <React.Fragment>
+            {createBoard()}
+        </React.Fragment>
+    );
 }
 
 export default Chessboard;

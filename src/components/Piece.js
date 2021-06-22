@@ -1,4 +1,3 @@
-import React from 'react'; 
 import {ReactComponent as KingWhite} from '../assets/img/king_white.svg';
 import {ReactComponent as QueenWhite} from '../assets/img/queen_white.svg';
 import {ReactComponent as RookWhite} from '../assets/img/rook_white.svg';
@@ -14,8 +13,10 @@ import {ReactComponent as PawnBlack} from '../assets/img/pawn_black.svg';
 
 import './Piece.css';
 
-class Piece extends React.Component {
-    pieceComponents = {
+const Piece = ({inCheck, orientation, determineValidMoves, row, col, piece, color}) => {
+    let inCheckClass = (inCheck === true) ? 'in-check' : '';
+
+    const pieceComponents = {
         'white': {
             'king': (<KingWhite />),
             'queen': (<QueenWhite />),
@@ -34,7 +35,7 @@ class Piece extends React.Component {
         }
     }
 
-    generateStyle = (orientation, row, col) => {
+    const generateStyle = (orientation, row, col) => {
         let rowOrientationModifier = (orientation === 'white') ? 7 : 0;
         let rowMultiplier = (orientation === 'white') ? -1 : 1;
         let colOrientationModifier = (orientation === 'white') ? 0 : 7;
@@ -46,17 +47,14 @@ class Piece extends React.Component {
         }
     }
 
-    render() {
-        let inCheckClass = (this.props.inCheck === true) ? 'in-check' : '';
-
-        return (
-            <div className={"piece-container " + inCheckClass}
-                style={this.generateStyle(this.props.orientation, this.props.row, this.props.col)} 
-                onClick={() => this.props.determineValidMoves(this.props.row, this.props.col)}>
-                {this.pieceComponents[this.props.color][this.props.piece]}
-            </div>
-        )
-    }
+    return (
+        <div className={"piece-container " + inCheckClass}
+            style={generateStyle(orientation, row, col)} 
+            onClick={() => determineValidMoves(row, col)}
+        >
+            {pieceComponents[color][piece]}
+        </div>
+    );
 }
 
 export default Piece;

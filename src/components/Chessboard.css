@@ -1,0 +1,31 @@
+.board-square {
+    position: absolute;
+    height: 12.5%;
+    width: 12.5%;
+}
+
+.light-square {
+    background:#ffce9d;
+}
+
+.dark-square {
+    background:#d18a46;
+}
+
+.move-history-square {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.move-history-square.last-move-start {
+    background: #44ffa8;
+    opacity: .3;
+}
+
+.move-history-square.last-move-end {
+    background: #44ffa8;
+    opacity: .4;
+}

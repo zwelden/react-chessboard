@@ -131,7 +131,7 @@ class ChessboardContainer extends React.Component {
                 });  
             }
         }
-        
+
         return isEndOfGame;
     }
 
@@ -281,27 +281,34 @@ class ChessboardContainer extends React.Component {
                         clearMoveIndicators={this.clearValidMoves}
                         boardOrientation={this.state.boardOrientation}
                         lastMoveStart={this.state.lastMoveStart}
-                        lastMoveEnd={this.state.lastMoveEnd}/>
+                        lastMoveEnd={this.state.lastMoveEnd}
+                    />
                     <BoardNotationOverlay boardOrientation={this.state.boardOrientation} />
                     <ChessboardPieces 
                         boardPositions={this.state.boardPositions} 
                         boardOrientation={this.state.boardOrientation}
                         determineValidMoves={this.determineValidMoves}
                         whiteInCheck={this.state.gameState.white.inCheck}
-                        blackInCheck={this.state.gameState.black.inCheck}/>
+                        blackInCheck={this.state.gameState.black.inCheck}
+                    />
                     <ValidMoveSquares 
                         locations={this.state.validMoveSquares} 
                         selectMoveChoice={this.selectMoveChoice} 
-                        boardOrientation={this.state.boardOrientation}/>
+                        boardOrientation={this.state.boardOrientation}
+                    />
                     {this.state.displayPromotionOptions && 
                         <PawnPromotionOptions 
                             boardOrientation={this.state.boardOrientation} 
                             col={this.state.promoteColumn}
                             color={this.state.currentPlayer}
-                            selectPromotionChoice={this.selectPromotionChoice}/>
+                            selectPromotionChoice={this.selectPromotionChoice}
+                        />
                     }
                     {this.state.gameOver && 
-                        <EndOfGameDisplay endType={this.state.outcome} winner={this.state.winner}/>
+                        <EndOfGameDisplay 
+                            endType={this.state.outcome} 
+                            winner={this.state.winner}
+                        />
                     }
                 </div>
                 <div className="actions-pane">

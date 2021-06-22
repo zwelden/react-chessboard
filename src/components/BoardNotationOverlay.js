@@ -1,16 +1,16 @@
 import React from 'react';
 import './BoardNotationOverlay.css';
 
-class BoardNotationOverlay extends React.Component {
+const BoardNotationOverlay = ({boardOrientation}) => {
 
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    numbers = ['1', '2', '3', '4', '5', '6' , '7' , '8'];
+    const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const numbers = ['1', '2', '3', '4', '5', '6' , '7' , '8'];
 
-    generateStyle = (orientation, row, col, type) => {     
-        let rowOrientationModifier = (orientation === 'white') ? 7 : 0;
-        let rowMultiplier = (orientation === 'white') ? -1 : 1;
-        let colOrientationModifier = (orientation === 'white') ? 0 : 7;
-        let colMultiplier = (orientation === 'white') ? 1 : -1;
+    const generateStyle = (row, col, type) => {     
+        let rowOrientationModifier = (boardOrientation === 'white') ? 7 : 0;
+        let rowMultiplier = (boardOrientation === 'white') ? -1 : 1;
+        let colOrientationModifier = (boardOrientation === 'white') ? 0 : 7;
+        let colMultiplier = (boardOrientation === 'white') ? 1 : -1;
         
 
         if (type === 'letters') {
@@ -28,41 +28,39 @@ class BoardNotationOverlay extends React.Component {
         }
     }
 
-    generateColorClass = (orientation, row, col) => {
+    const generateColorClass = (row, col) => {
         let squareType = (row + col) % 2;
-        let targetVal = (orientation === 'white') ? 1 : 0;
+        let targetVal = (boardOrientation === 'white') ? 1 : 0;
         return (squareType === targetVal) ? 'light-square-char' : 'dark-square-char';
     }
 
-    render () {
-        return (
-            <React.Fragment>
-                {this.letters.map((char, index) => {
-                    return (<div 
-                                key={index} 
-                                className={'board-notation-item board-notation-letter ' + this.generateColorClass(this.props.boardOrientation, 0, index)}
-                                style={this.generateStyle(this.props.boardOrientation, 0, index, 'letters')}>
-                                
-                                <div className="board-notation-indicator">
-                                    {char}
-                                </div>
-                            </div>)
-                })}
+    return (
+        <React.Fragment>
+            {letters.map((char, index) => {
+                return (<div 
+                            key={index} 
+                            className={'board-notation-item board-notation-letter ' + generateColorClass(0, index)}
+                            style={generateStyle(0, index, 'letters')}
+                        >
+                            <div className="board-notation-indicator">
+                                {char}
+                            </div>
+                        </div>)
+            })}
 
-                {this.numbers.map((num, index) => {
-                    return (<div 
-                                key={index} 
-                                className={'board-notation-item board-notation-number ' + this.generateColorClass(this.props.boardOrientation, index, 0)}
-                                style={this.generateStyle(this.props.boardOrientation, index, 0, 'numbers')}>
-                                
-                                <div className="board-notation-indicator">
-                                    {num}
-                                </div>
-                            </div>)
-                })}
-            </React.Fragment>
-        )
-    }
+            {numbers.map((num, index) => {
+                return (<div 
+                            key={index} 
+                            className={'board-notation-item board-notation-number ' + generateColorClass(index, 0)}
+                            style={generateStyle(index, 0, 'numbers')}
+                        >
+                            <div className="board-notation-indicator">
+                                {num}
+                            </div>
+                        </div>)
+            })}
+        </React.Fragment>
+    );
 }
 
 export default BoardNotationOverlay;

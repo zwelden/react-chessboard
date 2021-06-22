@@ -1,8 +1,9 @@
 import React from 'react';
+import './ValidMoveSquares.css';
 
-class ValidMoveSquares extends React.Component {
+const ValidMoveSquares = ({locations, boardOrientation, selectMoveChoice}) => {
 
-    generateStyle = (orientation, row, col) => {
+    const generateStyle = (orientation, row, col) => {
         let rowOrientationModifier = (orientation === 'white') ? 7 : 0;
         let rowMultiplier = (orientation === 'white') ? -1 : 1;
         let colOrientationModifier = (orientation === 'white') ? 0 : 7;
@@ -14,21 +15,22 @@ class ValidMoveSquares extends React.Component {
         }
     }
 
-    render() {
-        return (
-            <React.Fragment>
-                {this.props.locations.map(loc => {
-                    return (<div key={loc.row + '-' + loc.col} 
-                                className="valid-move-square" 
-                                style={this.generateStyle(this.props.boardOrientation, loc.row, loc.col)} 
-                                onClick={() => {this.props.selectMoveChoice(loc.row, loc.col, loc.type, loc.subType)}}>
-                                
-                                <div className={'indicator-' + loc.type}></div>
-                            </div>);
-                })}
-            </React.Fragment>
-        )
-    }
+    return (
+        <React.Fragment>
+            {locations.map(loc => {
+                return (
+                    <div key={loc.row + '-' + loc.col} 
+                        className="valid-move-square" 
+                        style={generateStyle(boardOrientation, loc.row, loc.col)} 
+                        onClick={() => {selectMoveChoice(loc.row, loc.col, loc.type, loc.subType)}}
+                    >
+                        
+                        <div className={'indicator-' + loc.type}></div>
+                    </div>
+                );
+            })}
+        </React.Fragment>
+    );
 }
 
 export default ValidMoveSquares;
