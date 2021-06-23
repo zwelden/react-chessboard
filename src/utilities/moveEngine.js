@@ -1,53 +1,4 @@
-export const determineValidPieceMoves = (gameState, boardState, row, col) => {
-    let pieceToMove = boardState[row][col];
-    let pieceType = '';
-    let pieceColor = '';
-    let kingPosition = {row: -1, col: -1};
-    
-    if (pieceToMove.length < 2) {
-        return [];
-    }
-
-    pieceType = pieceToMove.charAt(0);
-    pieceColor = pieceToMove.charAt(1);
-    kingPosition = getKingPosition(pieceColor, boardState);
-
-    let validMoves = [];
-
-
-    switch (pieceType) {
-        case 'p':
-            validMoves = validPawnMoves(gameState, pieceColor, boardState, kingPosition, row, col);
-            break;
-        
-        case 'n':
-            validMoves = validKnightMoves(pieceColor, boardState, kingPosition, row, col);
-            break;
-
-        case 'b':
-            validMoves = validBishopMoves(pieceColor, boardState, kingPosition, row, col);
-            break;
-    
-        case 'r':
-            validMoves = validRookMoves(pieceColor, boardState, kingPosition, row, col);
-            break;
-
-        case 'q':
-            validMoves = validQueenMoves(pieceColor, boardState, kingPosition, row, col);
-            break;
-
-        case 'k':
-            validMoves = validKingMoves(gameState, pieceColor, boardState, row, col);
-            break;
-        
-        
-        default:
-            break;
-    }
-
-    return validMoves;
-}
-
+import {cloneDeep} from 'lodash';
 
 const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, col) => {
     let validMoves = [];
@@ -55,7 +6,7 @@ const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, co
     let attackMoves = [];
     let enPassantMoves = [];
     let enPassantTarget = (pieceColor === 'w') ? 'black' : 'white';
-    let enPassantablePawn = gameState[enPassantTarget].enPassantablePawn;
+    let enPassantablePawn = gameState.enPassantablePawn;
     let enPassRowAdjust = (pieceColor === 'w') ? -1 : 1;
     
 
@@ -84,7 +35,7 @@ const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, co
         }
 
         let square = boardState[move.r][move.c];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
+        let newBoardState = cloneDeep(boardState);
         let inCheck = false;
         newBoardState[row][col] = '';
         newBoardState[move.r][move.c] = 'p' + pieceColor.charAt(0);
@@ -106,7 +57,7 @@ const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, co
         }
 
         let square = boardState[move.r][move.c];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
+        let newBoardState = cloneDeep(boardState);
         let inCheck = false;
         newBoardState[row][col] = '';
         newBoardState[move.r][move.c] = 'p' + pieceColor.charAt(0);
@@ -130,10 +81,14 @@ const validPawnMoves = (gameState, pieceColor, boardState, kingPosition, row, co
     
             let enPassPawnRow = enPassantablePawn.row;
             let enPassPawnCol = enPassantablePawn.col;
-            let newBoardState = JSON.parse(JSON.stringify(boardState));
+            let enPassantColor = enPassantablePawn.color;
+            let newBoardState = cloneDeep(boardState);
             let inCheck = false;
 
-            if (move.r + enPassRowAdjust !== enPassPawnRow || move.c !== enPassPawnCol) {
+            if (enPassantColor !== enPassantTarget 
+                || move.r + enPassRowAdjust !== enPassPawnRow 
+                || move.c !== enPassPawnCol
+            ) {
                 return;
             }
 
@@ -175,7 +130,7 @@ const validKnightMoves = (pieceColor, boardState, kingPosition, row, col) => {
         }
         
         let square = boardState[move.r][move.c];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
+        let newBoardState = cloneDeep(boardState);
         let inCheck = false;
         newBoardState[row][col] = '';
         newBoardState[move.r][move.c] = 'n' + pieceColor.charAt(0);
@@ -237,7 +192,7 @@ const validKingMoves = (gameState, pieceColor, boardState, row, col) => {
         }
         
         let square = boardState[move.r][move.c];
-        let newBoardState = JSON.parse(JSON.stringify(boardState));
+        let newBoardState = cloneDeep(boardState);
         let inCheck = false;
         newBoardState[row][col] = '';
         newBoardState[move.r][move.c] = 'k' + pieceColor.charAt(0);
@@ -294,7 +249,7 @@ const canCastleKingSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare = cloneDeep(boardState);  
     newBoardStateAtBishopSquare[row][4] = '';
     newBoardStateAtBishopSquare[row][5] = 'k' + kingColor;
     inCheckAtBishopSquare = isKingInCheck({row: row, col: 5}, kingColor, newBoardStateAtBishopSquare);
@@ -303,7 +258,7 @@ const canCastleKingSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtKnightSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtKnightSquare = cloneDeep(boardState);  
     newBoardStateAtKnightSquare[row][4] = '';
     newBoardStateAtKnightSquare[row][6] = 'k' + kingColor;
     inCheckAtKnightSquare = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtKnightSquare);
@@ -312,7 +267,7 @@ const canCastleKingSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtKnightSquare2 = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtKnightSquare2 = cloneDeep(boardState);  
     newBoardStateAtKnightSquare2[row][4] = '';
     newBoardStateAtKnightSquare2[row][6] = 'k' + kingColor;
     newBoardStateAtKnightSquare2[row][5] = 'r' + kingColor;
@@ -339,7 +294,7 @@ const canCastleQueenSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtQueenSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtQueenSquare = cloneDeep(boardState);  
     newBoardStateAtQueenSquare[row][4] = '';
     newBoardStateAtQueenSquare[row][3] = 'k' + kingColor;
     inCheckAtQueenSquare = isKingInCheck({row: row, col: 5}, kingColor, newBoardStateAtQueenSquare);
@@ -348,7 +303,7 @@ const canCastleQueenSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtBishopSquare = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare = cloneDeep(boardState);  
     newBoardStateAtBishopSquare[row][4] = '';
     newBoardStateAtBishopSquare[row][2] = 'k' + kingColor;
     inCheckAtBishopSquare = isKingInCheck({row: row, col: 6}, kingColor, newBoardStateAtBishopSquare);
@@ -357,7 +312,7 @@ const canCastleQueenSide = (kingColor, boardState) => {
         return false;
     }
 
-    newBoardStateAtBishopSquare2 = JSON.parse(JSON.stringify(boardState));  
+    newBoardStateAtBishopSquare2 = cloneDeep(boardState);  
     newBoardStateAtBishopSquare2[row][4] = '';
     newBoardStateAtBishopSquare2[row][2] = 'k' + kingColor;
     newBoardStateAtBishopSquare2[row][3] = 'r' + kingColor;
@@ -414,6 +369,7 @@ const validHorizontalVerticalMoves = (pieceType, pieceColor, boardState, kingPos
     return validMoves;
 }
 
+
 const validDirectionalMoves = (boardState, kingPosition, pieceType, pieceColor, row, col, xIter, yIter) => {
     const startPosition = {row: row, col: col};
     let validMoves = [];
@@ -446,7 +402,7 @@ const evaluateMove = (boardState, kingPosition, pieceType, pieceColor, startPosi
     let x = movePosition.col;
     let y = movePosition.row;
     let square = boardState[y][x];
-    let newBoardState = JSON.parse(JSON.stringify(boardState));
+    let newBoardState = cloneDeep(boardState);
     let inCheck = false;
     let moveValid = false;
     let maxMove = false;
@@ -483,6 +439,58 @@ const evaluateMove = (boardState, kingPosition, pieceType, pieceColor, startPosi
 
     return {moveValid: moveValid, maxMove: maxMove, moveDetail: moveDetail};
 }
+
+
+export const determineValidPieceMoves = (gameState, boardState, row, col) => {
+    let pieceToMove = boardState[row][col];
+    let pieceType = '';
+    let pieceColor = '';
+    let kingPosition = {row: -1, col: -1};
+    
+    if (pieceToMove.length < 2) {
+        return [];
+    }
+
+    pieceType = pieceToMove.charAt(0);
+    pieceColor = pieceToMove.charAt(1);
+    kingPosition = getKingPosition(pieceColor, boardState);
+
+    let validMoves = [];
+
+
+    switch (pieceType) {
+        case 'p':
+            validMoves = validPawnMoves(gameState, pieceColor, boardState, kingPosition, row, col);
+            break;
+        
+        case 'n':
+            validMoves = validKnightMoves(pieceColor, boardState, kingPosition, row, col);
+            break;
+
+        case 'b':
+            validMoves = validBishopMoves(pieceColor, boardState, kingPosition, row, col);
+            break;
+    
+        case 'r':
+            validMoves = validRookMoves(pieceColor, boardState, kingPosition, row, col);
+            break;
+
+        case 'q':
+            validMoves = validQueenMoves(pieceColor, boardState, kingPosition, row, col);
+            break;
+
+        case 'k':
+            validMoves = validKingMoves(gameState, pieceColor, boardState, row, col);
+            break;
+        
+        
+        default:
+            break;
+    }
+
+    return validMoves;
+}
+
 
 export const getKingPosition = (pieceColor, boardState) => {
     let row = -1;
@@ -657,6 +665,7 @@ export const playerHasValidMoves = (gameState, boardState, pieces) => {
     return hasValidMoves;
 }
 
+
 export const getAllPieceCoordsByColor = (boardState, color) => {
     let pieces = [];
     
@@ -669,4 +678,119 @@ export const getAllPieceCoordsByColor = (boardState, color) => {
     });
 
     return pieces;
+}
+
+
+export const isPieceEnPassantable = (piece, oldRow, newRow) => {
+    let enPassantable = false;
+    if (piece.charAt(0) === 'p'
+        && (
+            (piece.charAt(1) === 'w' && oldRow === 1 && newRow === 3) 
+            || (piece.charAt(1) === 'b' && oldRow === 6 && newRow === 4) 
+        )
+    ) {
+        enPassantable = true;
+    }
+
+    return enPassantable;
+}
+
+export const isPiecePromotable = (piece, toRow) => {
+    let isPromotable = false;
+
+    if (piece.charAt(0) === 'p'
+        && (
+            (piece.charAt(1) === 'w' && toRow === 7) 
+            || (piece.charAt(1) === 'b' && toRow === 0) 
+        )
+    ) {
+        isPromotable = true;
+    }
+
+    return isPromotable;
+}
+
+export const hasKingMoved = (piece, oldRow) => {
+    let hasMoved = false;
+
+    if (piece.charAt(0) === 'k' 
+        && (
+            (piece.charAt(1) === 'w' && oldRow === 0)
+            || (piece.charAt(1) === 'b' && oldRow === 7)
+        )
+    ) {
+        hasMoved = true;
+    }
+
+    return hasMoved;
+}
+
+export const hasKingSideRookMoved = (piece, oldRow, oldCol) => {
+    let hasMoved = false;
+
+    if (piece.charAt(0) === 'r' 
+        && (
+            (piece.charAt(1) === 'w' && oldRow === 0)
+            || (piece.charAt(1) === 'b' && oldRow === 7)
+        )
+        && oldCol === 7
+    ) {
+        hasMoved = true;
+    }
+
+    return hasMoved;
+}
+
+export const hasQueenSideRookMoved = (piece, oldRow, oldCol) => {
+    let hasMoved = false;
+
+    if (piece.charAt(0) === 'r' 
+        && (
+            (piece.charAt(1) === 'w' && oldRow === 0)
+            || (piece.charAt(1) === 'b' && oldRow === 7)
+        )
+        && oldCol === 0
+    ) {
+        hasMoved = true;
+    }
+
+    return hasMoved;
+}
+
+
+export const evaluateIfEndOfGame = (gameState, boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck) => {
+    let isEndOfGame = false;
+    let endType = '';
+    let nextPlayerPieces = getAllPieceCoordsByColor(boardState, nextPlayerColor);
+    let currentPlayerPieces = [];
+    let nextPlayerHasAvaliableMove;
+
+    if (nextPlayerPieces.length === 1) {
+        currentPlayerPieces = getAllPieceCoordsByColor(boardState, currentPlayer.charAt(0));
+
+        if (currentPlayerPieces.length === 1) {
+            isEndOfGame = true;
+            endType = 'draw';
+        }
+    }
+
+    if (isEndOfGame === false) {
+        nextPlayerHasAvaliableMove = playerHasValidMoves(gameState, boardState, nextPlayerPieces);
+
+        if (nextPlayerHasAvaliableMove === false) {
+            isEndOfGame = true;
+
+            if (nextPlayerInCheck === true) {
+                endType = 'checkmate';
+            }
+            else {
+                endType = 'stalemate';  
+            }
+        }       
+    }
+
+    return {
+        isEndOfGame: isEndOfGame,
+        endType: endType
+    };
 }

@@ -1,7 +1,19 @@
 import React from 'react';
+import {cloneDeep} from 'lodash';
+
 import './ChessboardContainer.css';
 
-import {determineValidPieceMoves, getKingPosition, isKingInCheck, playerHasValidMoves, getAllPieceCoordsByColor} from '../utilities/moveEngine.js'
+import {
+    determineValidPieceMoves, 
+    getKingPosition, 
+    isKingInCheck, 
+    evaluateIfEndOfGame, 
+    isPieceEnPassantable, 
+    isPiecePromotable, 
+    hasKingMoved, 
+    hasKingSideRookMoved, 
+    hasQueenSideRookMoved
+} from '../utilities/moveEngine.js'
 import Chessboard from './Chessboard';
 import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
@@ -10,49 +22,61 @@ import ActionsContainer from './ActionsContainer';
 import PawnPromotionOptions from './PawnPromotionOptions';
 import EndOfGameDisplay from './EndOfGameDisplay';
 
+
+const initialState = {
+    gameOver: false,
+    outcome: '',
+    winner: '',
+    boardOrientation: 'white',
+    currentPlayer: 'white',
+    activePiece: {row: -1, col: -1},
+    lastMoveStart: {row: -1, col: -1},
+    lastMoveEnd: {row: -1, col: -1},
+    displayPromotionOptions: false,
+    promoteColumn: -1,
+    validMoveSquares: [],
+    boardPositions: [
+        ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
+        ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
+        ['', '', '', '', '', '', '', ''],
+        ['', '', '', '', '', '', '', ''],
+        ['', '', '', '', '', '', '', ''],
+        ['', '', '', '', '', '', '', ''],
+        ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb'],
+        ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
+    ],
+    enPassantablePawn: {},
+    whiteInCheck: false,
+    blackInCheck: false,
+    whiteKingMoved: false,
+    blackKingMoved: false,
+    whiteKingsRookMoved: false,
+    blackKingsRookMoved: false,
+    whiteQueensRookMoved: false,
+    blackQueensRookMoved: false
+}
+
 class ChessboardContainer extends React.Component {
     constructor (props) {
         super(props);
 
-        let boardPositions = [
-            ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
-            ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb'],
-            ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
-        ];
+        this.state = initialState;
+    }
 
-        this.state = {
-            gameOver: false,
-            outcome: '',
-            winner: '',
-            boardOrientation: 'white',
-            currentPlayer: 'white',
-            activePiece: {row: -1, col: -1},
-            lastMoveStart: {row: -1, col: -1},
-            lastMoveEnd: {row: -1, col: -1},
-            displayPromotionOptions: false,
-            promoteColumn: -1,
-            validMoveSquares: [],
-            boardPositions: boardPositions,
-            gameState: {
-                white: {
-                    inCheck: false,
-                    enPassantablePawn: {},
-                    kingMoved: false,
-                    kingsRookMoved: false,
-                    queensRookMoved: false
-                },
-                black: {
-                    inCheck: false,
-                    enPassantablePawn: {},
-                    kingMoved: false,
-                    kingsRookMoved: false,
-                    queensRookMoved: false
-                }
+    getGameState = () => {
+        return {
+            enPassantablePawn: this.state.enPassantablePawn,
+            white: {
+                inCheck: this.state.whiteInCheck,
+                kingMoved: this.state.whiteKingMoved,
+                kingsRookMoved: this.state.whiteKingsRookMoved,
+                queensRookMoved: this.state.whiteQueensRookMoved
+            },
+            black: {
+                inCheck: this.state.blackInCheck,
+                kingMoved: this.state.blackKingMoved,
+                kingsRookMoved: this.state.blackKingsRookMoved,
+                queensRookMoved: this.state.blackQueensRookMoved
             }
         }
     }
@@ -76,7 +100,7 @@ class ChessboardContainer extends React.Component {
         }
 
         this.setState({activePiece: {row: row, col: col}});
-        validMoves = determineValidPieceMoves(this.state.gameState, this.state.boardPositions, row, col);
+        validMoves = determineValidPieceMoves(this.getGameState(), this.state.boardPositions, row, col);
 
         if (validMoves.length > 0) {
             this.displayValidMoveSquares(validMoves);
@@ -90,130 +114,96 @@ class ChessboardContainer extends React.Component {
         this.setState({validMoveSquares: [], activePiece: {}});
     }
 
+    setStateForNextPlayer = (currentPlayer, nextPlayer, boardState) => {
+        let nextPlayerColor = nextPlayer.charAt(0);
+        let kingPosition = getKingPosition(nextPlayerColor, boardState);
+        let nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, boardState);
+        let whiteInCheck = false;
+        let blackInCheck = false;
 
-    evaluateIfEndOfGame = (boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck) => {
-        let isEndOfGame = false;
-        let nextPlayerPieces = getAllPieceCoordsByColor(boardState, nextPlayerColor);
-        let currentPlayerPieces = [];
-        let nextPlayerHasAvaliableMove;
-
-        if (nextPlayerPieces.length === 1) {
-            currentPlayerPieces = getAllPieceCoordsByColor(boardState, currentPlayer.charAt(0));
-
-            if (currentPlayerPieces.length === 1) {
-                this.setState({
-                    gameOver: true,
-                    outcome: 'draw',
-                    winner: '',
-                });
-
-                isEndOfGame = true;
-            }
-        }
-
-        nextPlayerHasAvaliableMove = playerHasValidMoves(this.state.gameState, boardState, nextPlayerPieces);
-
-        if (isEndOfGame === false && nextPlayerHasAvaliableMove === false) {
-            isEndOfGame = true;
-
-            if (nextPlayerInCheck === true) {
-                this.setState({
-                    gameOver: true,
-                    outcome: 'checkmate',
-                    winner: currentPlayer,
-                });
+        if (nextPlayerInCheck === true) {
+            if (nextPlayer === 'white') {
+                whiteInCheck = true;
             }
             else {
-                this.setState({
-                    gameOver: true,
-                    outcome: 'stalemate',
-                    winner: '',
-                });  
+                blackInCheck = true;
             }
+            this.setState({
+                whiteInCheck: whiteInCheck, 
+                blackInCheck: blackInCheck
+            });
         }
 
-        return isEndOfGame;
+        let endOfGame = evaluateIfEndOfGame(this.getGameState(), boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
+
+        if (endOfGame.isEndOfGame === true) {
+            this.setState({
+                gameOver: true,
+                outcome: endOfGame.endType,
+                winner: (endOfGame.endType === 'checkmate') ? currentPlayer : '',
+            });
+        }
     }
 
-
     selectMoveChoice = (toRow, toCol, moveType, moveSubType) => {
-        let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
+        let newBoardState = cloneDeep(this.state.boardPositions);
         let oldPosition = this.state.activePiece;
         let oldRow = oldPosition.row;
         let oldCol = oldPosition.col;
         let piece = newBoardState[oldRow][oldCol];
         let currentPlayer = this.state.currentPlayer;
         let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
-        let currentEnPassantablePawn = this.state.gameState[nextPlayer].enPassantablePawn;
+        let currentEnPassantablePawn = this.state.enPassantablePawn;
         let enPassantablePawn = {};
         let displayPromotionOptions = false;
         let promoteColumn = -1;
-        let nextPlayerColor;
-        let kingPosition;
-        let nextPlayerInCheck;
 
         newBoardState[oldRow][oldCol] = '';
         newBoardState[toRow][toCol] = piece;
 
-        if (piece.charAt(0) === 'p'
-            && (
-                (piece.charAt(1) === 'w' && oldRow === 1 && toRow === 3) 
-                || (piece.charAt(1) === 'b' && oldRow === 6 && toRow === 4) 
-            )
-        ) {
-            enPassantablePawn = {row: toRow, col: toCol}; 
+        switch (piece.charAt(0)) {
+            case 'p':
+                if (isPiecePromotable(piece, toRow)) {
+                    displayPromotionOptions = true;
+                    promoteColumn = toCol;
+                    nextPlayer = currentPlayer;
+                }
+                else if (isPieceEnPassantable(piece, oldRow, toRow)) {
+                    enPassantablePawn = {row: toRow, col: toCol, color: currentPlayer}; 
+                }
+                else if (moveSubType && moveSubType === 'enPassant') {
+                    newBoardState[currentEnPassantablePawn.row][currentEnPassantablePawn.col] = '';
+                }
+                break;
+            
+            case 'k':
+                if (moveSubType && moveSubType === 'castleKingSide') {
+                    newBoardState[toRow][7] = '';
+                    newBoardState[toRow][5] = 'r' + piece.charAt(1);
+                }
+                else if (moveSubType && moveSubType === 'castleQueenSide') {
+                    newBoardState[toRow][0] = '';
+                    newBoardState[toRow][3] = 'r' + piece.charAt(1);
+                }
+
+                if (hasKingMoved(piece, oldRow)) {
+                    this.setState(state => {state[currentPlayer + 'KingMoved'] = true; return state});
+                }
+                break;
+
+            case 'r':
+                if (hasKingSideRookMoved(piece, oldRow, oldCol)) {
+                    this.setState(state => {state[currentPlayer + 'KingsRookMoved'] = true; return state});
+                }
+                else if (hasQueenSideRookMoved(piece, oldRow, oldCol)) {
+                    this.setState(state => {state[currentPlayer + 'QueensRookMoved'] = true; return state});
+                }
+                break;
+
+            default:
+                break;
         }
 
-        if (moveSubType && moveSubType === 'enPassant') {
-            newBoardState[currentEnPassantablePawn.row][currentEnPassantablePawn.col] = '';
-        }
-        else if (moveSubType && moveSubType === 'castleKingSide') {
-            newBoardState[toRow][7] = '';
-            newBoardState[toRow][5] = 'r' + piece.charAt(1);
-        }
-        else if (moveSubType && moveSubType === 'castleQueenSide') {
-            newBoardState[toRow][0] = '';
-            newBoardState[toRow][3] = 'r' + piece.charAt(1);
-        }
-
-        if (piece.charAt(0) === 'p'
-            && (
-                (piece.charAt(1) === 'w' && toRow === 7) 
-                || (piece.charAt(1) === 'b' && toRow === 0) 
-            )
-        ) {
-            displayPromotionOptions = true;
-            promoteColumn = toCol;
-            nextPlayer = currentPlayer;
-        }
-
-        if (piece.charAt(0) === 'k' 
-            && (
-                (piece.charAt(1) === 'w' && oldRow === 0)
-                || (piece.charAt(1) === 'b' && oldRow === 7)
-            )
-        ) {
-            this.setState(state => {state.gameState[currentPlayer].kingMoved = true; return state});
-        }
-
-        if (piece.charAt(0) === 'r' 
-            && (
-                (piece.charAt(1) === 'w' && oldRow === 0)
-                || (piece.charAt(1) === 'b' && oldRow === 7)
-            )
-        ) {
-            if (oldCol === 0) {
-                this.setState(state => {state.gameState[currentPlayer].queensRookMoved = true; return state});
-            }
-            else if (oldCol === 7) {
-                this.setState(state => {state.gameState[currentPlayer].kingsRookMoved = true; return state});
-            }
-        }
-
-        this.setState(state => {state.gameState[currentPlayer].enPassantablePawn = enPassantablePawn; return state});
-        this.setState(state => {state.gameState[currentPlayer].inCheck = false; return state});
-        this.setState(state => {state.gameState[nextPlayer].enPassantablePawn = {}; return state});
-        
         this.setState({
             boardPositions: newBoardState, 
             displayPromotionOptions: displayPromotionOptions,
@@ -222,32 +212,24 @@ class ChessboardContainer extends React.Component {
             lastMoveStart: {row: oldRow, col: oldCol},
             lastMoveEnd: {row: toRow, col: toCol},
             validMoveSquares: [],
-            currentPlayer: nextPlayer
+            currentPlayer: nextPlayer,
+            enPassantablePawn: enPassantablePawn,
+            whiteInCheck: false,
+            blackInCheck: false
         });
 
         if (displayPromotionOptions === true) {
             return;
         }
 
-        nextPlayerColor = nextPlayer.charAt(0);
-        kingPosition = getKingPosition(nextPlayerColor, newBoardState);
-        nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
-
-        if (nextPlayerInCheck === true) {
-            this.setState(state => {state.gameState[nextPlayer].inCheck = true; return state});
-        }
-
-        this.evaluateIfEndOfGame(newBoardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
+        this.setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
     }
 
     selectPromotionChoice = (newPiece, row, col) => {
-        let newBoardState = JSON.parse(JSON.stringify(this.state.boardPositions));
+        let newBoardState = cloneDeep(this.state.boardPositions);
         let currentPlayer = this.state.currentPlayer;
         let pieceColor = (currentPlayer === 'white') ? 'w' : 'b';
         let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
-        let nextPlayerColor = nextPlayer.charAt(0);
-        let kingPosition;
-        let nextPlayerInCheck;
         
         newBoardState[row][col] = newPiece + pieceColor;
 
@@ -260,19 +242,15 @@ class ChessboardContainer extends React.Component {
             currentPlayer: nextPlayer
         });
 
-        nextPlayerColor = nextPlayer.charAt(0);
-        kingPosition = getKingPosition(nextPlayerColor, newBoardState);
-        nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, newBoardState);
+        this.setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
+    }
 
-        if (nextPlayerInCheck === true) {
-            this.setState(state => {state.gameState[nextPlayer].inCheck = true; return state});
-        }
 
-        this.evaluateIfEndOfGame(newBoardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
+    restartGame = () => {
+        this.setState(initialState);
     }
 
     
-
     render () {
         return (
             <React.Fragment>
@@ -288,8 +266,8 @@ class ChessboardContainer extends React.Component {
                         boardPositions={this.state.boardPositions} 
                         boardOrientation={this.state.boardOrientation}
                         determineValidMoves={this.determineValidMoves}
-                        whiteInCheck={this.state.gameState.white.inCheck}
-                        blackInCheck={this.state.gameState.black.inCheck}
+                        whiteInCheck={this.state.whiteInCheck}
+                        blackInCheck={this.state.blackInCheck}
                     />
                     <ValidMoveSquares 
                         locations={this.state.validMoveSquares} 
@@ -312,7 +290,10 @@ class ChessboardContainer extends React.Component {
                     }
                 </div>
                 <div className="actions-pane">
-                    <ActionsContainer flipBoardOrientation={this.flipBoardOrientation} />
+                    <ActionsContainer 
+                        restartGame={this.restartGame}
+                        flipBoardOrientation={this.flipBoardOrientation} 
+                    />
                 </div>
             </React.Fragment>
         )
