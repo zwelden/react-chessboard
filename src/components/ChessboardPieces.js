@@ -19,7 +19,7 @@ const ChessboardPieces = ({boardPositions, boardOrientation, determineValidMoves
 
     const createPieceComponents = () => {
         let pieceComponents = [];
-
+        
         boardPositions.forEach((row, row_index) => {
             row.forEach((piece, col_index) => {
                 if (piece === '') { return; }

@@ -1,8 +1,7 @@
-import React from 'react';
+import React, {useReducer} from 'react';
 import {cloneDeep} from 'lodash';
 
-import './ChessboardContainer.css';
-
+import {initialState, reducer} from '../utilities/ChessBoardReducer';
 import {
     determineValidPieceMoves, 
     getKingPosition, 
@@ -14,6 +13,7 @@ import {
     hasKingSideRookMoved, 
     hasQueenSideRookMoved
 } from '../utilities/moveEngine.js'
+
 import Chessboard from './Chessboard';
 import BoardNotationOverlay from './BoardNotationOverlay';
 import ChessboardPieces from './ChessboardPieces';
@@ -22,138 +22,79 @@ import ActionsContainer from './ActionsContainer';
 import PawnPromotionOptions from './PawnPromotionOptions';
 import EndOfGameDisplay from './EndOfGameDisplay';
 
+import './ChessboardContainer.css';
 
-const initialState = {
-    gameOver: false,
-    outcome: '',
-    winner: '',
-    boardOrientation: 'white',
-    currentPlayer: 'white',
-    activePiece: {row: -1, col: -1},
-    lastMoveStart: {row: -1, col: -1},
-    lastMoveEnd: {row: -1, col: -1},
-    displayPromotionOptions: false,
-    promoteColumn: -1,
-    validMoveSquares: [],
-    boardPositions: [
-        ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
-        ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '', ''],
-        ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb'],
-        ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
-    ],
-    enPassantablePawn: {},
-    whiteInCheck: false,
-    blackInCheck: false,
-    whiteKingMoved: false,
-    blackKingMoved: false,
-    whiteKingsRookMoved: false,
-    blackKingsRookMoved: false,
-    whiteQueensRookMoved: false,
-    blackQueensRookMoved: false
-}
 
-class ChessboardContainer extends React.Component {
-    constructor (props) {
-        super(props);
+const ChessboardContainer = (props) => {
 
-        this.state = initialState;
-    }
+    const [state, dispatch] = useReducer(reducer, initialState);
 
-    getGameState = () => {
+    const getGameState = () => {
         return {
-            enPassantablePawn: this.state.enPassantablePawn,
+            enPassantablePawn: state.enPassantablePawn,
             white: {
-                inCheck: this.state.whiteInCheck,
-                kingMoved: this.state.whiteKingMoved,
-                kingsRookMoved: this.state.whiteKingsRookMoved,
-                queensRookMoved: this.state.whiteQueensRookMoved
+                inCheck: state.whiteInCheck,
+                kingMoved: state.whiteKingMoved,
+                kingsRookMoved: state.whiteKingsRookMoved,
+                queensRookMoved: state.whiteQueensRookMoved
             },
             black: {
-                inCheck: this.state.blackInCheck,
-                kingMoved: this.state.blackKingMoved,
-                kingsRookMoved: this.state.blackKingsRookMoved,
-                queensRookMoved: this.state.blackQueensRookMoved
+                inCheck: state.blackInCheck,
+                kingMoved: state.blackKingMoved,
+                kingsRookMoved: state.blackKingsRookMoved,
+                queensRookMoved: state.blackQueensRookMoved
             }
         }
     }
 
-    flipBoardOrientation = () => {
-        let nextBoardOrientation = (this.state.boardOrientation === 'white') ? 'black' : 'white';
-        this.setState({boardOrientation: nextBoardOrientation});
-    }
-
-    
-    displayValidMoveSquares = (validMoves) => {
-        this.setState({validMoveSquares: validMoves});
-    }
-
-    determineValidMoves = (row, col) => {
+    const determineValidMoves = (row, col) => {
         let validMoves = [];
-        let selectedSquare = this.state.boardPositions[row][col];
+        let selectedSquare = state.boardPositions[row][col];
         
-        if (selectedSquare.charAt(1) !== this.state.currentPlayer.charAt(0)) {
+        if (selectedSquare.charAt(1) !== state.currentPlayer.charAt(0)) {
             return;
         }
 
-        this.setState({activePiece: {row: row, col: col}});
-        validMoves = determineValidPieceMoves(this.getGameState(), this.state.boardPositions, row, col);
+        validMoves = determineValidPieceMoves(getGameState(), state.boardPositions, row, col);
 
-        if (validMoves.length > 0) {
-            this.displayValidMoveSquares(validMoves);
-        }
-        else {
-            this.setState({validMoveSquares: []});
-        }
+        dispatch({
+            type: 'updateValidMoveSquares', 
+            payload: {
+                validMoveSquares: validMoves, 
+                activePiece: {row: row, col: col}
+            }
+        });
     }
 
-    clearValidMoves = () => {
-        this.setState({validMoveSquares: [], activePiece: {}});
-    }
-
-    setStateForNextPlayer = (currentPlayer, nextPlayer, boardState) => {
+    const setStateForNextPlayer = (currentPlayer, nextPlayer, boardState) => {
         let nextPlayerColor = nextPlayer.charAt(0);
         let kingPosition = getKingPosition(nextPlayerColor, boardState);
         let nextPlayerInCheck = isKingInCheck(kingPosition, nextPlayerColor, boardState);
-        let whiteInCheck = false;
-        let blackInCheck = false;
+        let winner;
+        let endType;
 
         if (nextPlayerInCheck === true) {
-            if (nextPlayer === 'white') {
-                whiteInCheck = true;
-            }
-            else {
-                blackInCheck = true;
-            }
-            this.setState({
-                whiteInCheck: whiteInCheck, 
-                blackInCheck: blackInCheck
-            });
+            dispatch({type: 'updatePlayerInCheck', payload: nextPlayer})
         }
 
-        let endOfGame = evaluateIfEndOfGame(this.getGameState(), boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
+        let endOfGame = evaluateIfEndOfGame(getGameState(), boardState, currentPlayer, nextPlayerColor, nextPlayerInCheck);
 
         if (endOfGame.isEndOfGame === true) {
-            this.setState({
-                gameOver: true,
-                outcome: endOfGame.endType,
-                winner: (endOfGame.endType === 'checkmate') ? currentPlayer : '',
-            });
+            endType = endOfGame.endType;
+            winner = (endType === 'checkmate') ? currentPlayer : '';
+            dispatch({type: 'endGame', payload: {endType: endType, winner: winner}})
         }
     }
 
-    selectMoveChoice = (toRow, toCol, moveType, moveSubType) => {
-        let newBoardState = cloneDeep(this.state.boardPositions);
-        let oldPosition = this.state.activePiece;
+    const selectMoveChoice = (toRow, toCol, moveType, moveSubType) => {
+        let newBoardState = cloneDeep(state.boardPositions);
+        let oldPosition = state.activePiece;
         let oldRow = oldPosition.row;
         let oldCol = oldPosition.col;
         let piece = newBoardState[oldRow][oldCol];
-        let currentPlayer = this.state.currentPlayer;
+        let currentPlayer = state.currentPlayer;
         let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
-        let currentEnPassantablePawn = this.state.enPassantablePawn;
+        let currentEnPassantablePawn = state.enPassantablePawn;
         let enPassantablePawn = {};
         let displayPromotionOptions = false;
         let promoteColumn = -1;
@@ -187,16 +128,16 @@ class ChessboardContainer extends React.Component {
                 }
 
                 if (hasKingMoved(piece, oldRow)) {
-                    this.setState(state => {state[currentPlayer + 'KingMoved'] = true; return state});
+                    dispatch({type: 'setData', field: currentPlayer + 'KingMoved', payload: true});
                 }
                 break;
 
             case 'r':
                 if (hasKingSideRookMoved(piece, oldRow, oldCol)) {
-                    this.setState(state => {state[currentPlayer + 'KingsRookMoved'] = true; return state});
+                    dispatch({type: 'setData', field: currentPlayer + 'KingsRookMoved', payload: true});
                 }
                 else if (hasQueenSideRookMoved(piece, oldRow, oldCol)) {
-                    this.setState(state => {state[currentPlayer + 'QueensRookMoved'] = true; return state});
+                    dispatch({type: 'setData', field: currentPlayer + 'QueensRookMoved', payload: true});
                 }
                 break;
 
@@ -204,100 +145,98 @@ class ChessboardContainer extends React.Component {
                 break;
         }
 
-        this.setState({
-            boardPositions: newBoardState, 
-            displayPromotionOptions: displayPromotionOptions,
-            promoteColumn: promoteColumn,
-            activePiece: {}, 
-            lastMoveStart: {row: oldRow, col: oldCol},
-            lastMoveEnd: {row: toRow, col: toCol},
-            validMoveSquares: [],
-            currentPlayer: nextPlayer,
-            enPassantablePawn: enPassantablePawn,
-            whiteInCheck: false,
-            blackInCheck: false
+        dispatch({
+            type: 'updateStatePostMove',
+            payload: {
+                boardPositions: newBoardState, 
+                displayPromotionOptions: displayPromotionOptions,
+                promoteColumn: promoteColumn,
+                activePiece: {}, 
+                lastMoveStart: {row: oldRow, col: oldCol},
+                lastMoveEnd: {row: toRow, col: toCol},
+                validMoveSquares: [],
+                currentPlayer: nextPlayer,
+                enPassantablePawn: enPassantablePawn,
+                whiteInCheck: false,
+                blackInCheck: false
+            }
         });
 
         if (displayPromotionOptions === true) {
             return;
         }
 
-        this.setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
+        setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
     }
 
-    selectPromotionChoice = (newPiece, row, col) => {
-        let newBoardState = cloneDeep(this.state.boardPositions);
-        let currentPlayer = this.state.currentPlayer;
+    const selectPromotionChoice = (newPiece, row, col) => {
+        let newBoardState = cloneDeep(state.boardPositions);
+        let currentPlayer = state.currentPlayer;
         let pieceColor = (currentPlayer === 'white') ? 'w' : 'b';
         let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
         
         newBoardState[row][col] = newPiece + pieceColor;
 
-        this.setState({
-            boardPositions: newBoardState, 
-            displayPromotionOptions: false,
-            promoteColumn: -1,
-            activePiece: {}, 
-            validMoveSquares: [],
-            currentPlayer: nextPlayer
+        dispatch({
+            type: 'updateStatePostPromotion',
+            payload: {
+                boardPositions: newBoardState, 
+                displayPromotionOptions: false,
+                promoteColumn: -1,
+                activePiece: {}, 
+                validMoveSquares: [],
+                currentPlayer: nextPlayer
+            }
         });
 
-        this.setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
+        setStateForNextPlayer(currentPlayer, nextPlayer, newBoardState);
     }
 
-
-    restartGame = () => {
-        this.setState(initialState);
-    }
-
-    
-    render () {
-        return (
-            <React.Fragment>
-                <div className="board-wrapper">
-                    <Chessboard 
-                        clearMoveIndicators={this.clearValidMoves}
-                        boardOrientation={this.state.boardOrientation}
-                        lastMoveStart={this.state.lastMoveStart}
-                        lastMoveEnd={this.state.lastMoveEnd}
+    return (
+        <React.Fragment>
+            <div className="board-wrapper">
+                <Chessboard 
+                    clearMoveIndicators={() => {dispatch({type: 'clearValidMoveSquares'})}}
+                    boardOrientation={state.boardOrientation}
+                    lastMoveStart={state.lastMoveStart}
+                    lastMoveEnd={state.lastMoveEnd}
+                />
+                <BoardNotationOverlay boardOrientation={state.boardOrientation} />
+                <ChessboardPieces 
+                    boardPositions={state.boardPositions} 
+                    boardOrientation={state.boardOrientation}
+                    determineValidMoves={determineValidMoves}
+                    whiteInCheck={state.whiteInCheck}
+                    blackInCheck={state.blackInCheck}
+                />
+                <ValidMoveSquares 
+                    locations={state.validMoveSquares} 
+                    selectMoveChoice={selectMoveChoice} 
+                    boardOrientation={state.boardOrientation}
+                />
+                {state.displayPromotionOptions && 
+                    <PawnPromotionOptions 
+                        boardOrientation={state.boardOrientation} 
+                        col={state.promoteColumn}
+                        color={state.currentPlayer}
+                        selectPromotionChoice={selectPromotionChoice}
                     />
-                    <BoardNotationOverlay boardOrientation={this.state.boardOrientation} />
-                    <ChessboardPieces 
-                        boardPositions={this.state.boardPositions} 
-                        boardOrientation={this.state.boardOrientation}
-                        determineValidMoves={this.determineValidMoves}
-                        whiteInCheck={this.state.whiteInCheck}
-                        blackInCheck={this.state.blackInCheck}
+                }
+                {state.gameOver && 
+                    <EndOfGameDisplay 
+                        endType={state.outcome} 
+                        winner={state.winner}
                     />
-                    <ValidMoveSquares 
-                        locations={this.state.validMoveSquares} 
-                        selectMoveChoice={this.selectMoveChoice} 
-                        boardOrientation={this.state.boardOrientation}
-                    />
-                    {this.state.displayPromotionOptions && 
-                        <PawnPromotionOptions 
-                            boardOrientation={this.state.boardOrientation} 
-                            col={this.state.promoteColumn}
-                            color={this.state.currentPlayer}
-                            selectPromotionChoice={this.selectPromotionChoice}
-                        />
-                    }
-                    {this.state.gameOver && 
-                        <EndOfGameDisplay 
-                            endType={this.state.outcome} 
-                            winner={this.state.winner}
-                        />
-                    }
-                </div>
-                <div className="actions-pane">
-                    <ActionsContainer 
-                        restartGame={this.restartGame}
-                        flipBoardOrientation={this.flipBoardOrientation} 
-                    />
-                </div>
-            </React.Fragment>
-        )
-    }
+                }
+            </div>
+            <div className="actions-pane">
+                <ActionsContainer 
+                    restartGame={() => {dispatch({type: 'restartGame'})}}
+                    flipBoardOrientation={() => dispatch({type: 'flipBoardOrientation'})} 
+                />
+            </div>
+        </React.Fragment>
+    );
 }
 
 export default ChessboardContainer;
