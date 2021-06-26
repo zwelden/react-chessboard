@@ -1,3 +1,9 @@
+import { determineValidPieceMoves } from "./moveEngine";
+import { 
+    getGameState, 
+    constructStatePostMoveChoice, 
+    constructStatePostPromotionChoice } from "./helpers";
+
 export const initialState = {
     gameOver: false,
     outcome: '',
@@ -44,10 +50,24 @@ export const reducer = (state, action) => {
             return {...state, boardOrientation: newBoardOrientation};
 
         case 'updateValidMoveSquares':
+            let validMoves = [];
+            let selectedSquare = state.boardPositions[action.payload.row][action.payload.col];
+            
+            if (selectedSquare.charAt(1) !== state.currentPlayer.charAt(0)) {
+                return state;
+            }
+
+            validMoves = determineValidPieceMoves(
+                getGameState(state), 
+                state.boardPositions, 
+                action.payload.row, 
+                action.payload.col
+            );
+
             return {
                 ...state, 
-                validMoveSquares: action.payload.validMoveSquares,
-                activePiece: action.payload.activePiece
+                validMoveSquares: validMoves,
+                activePiece: {row: action.payload.row, col: action.payload.col}
             }
 
         case 'clearValidMoveSquares':
@@ -73,34 +93,11 @@ export const reducer = (state, action) => {
         
         case 'updateStatePostMove':
             payload = action.payload;
-            
-            return {
-                ...state,
-                boardPositions: payload.boardPositions, 
-                displayPromotionOptions: payload.displayPromotionOptions,
-                promoteColumn: payload.promoteColumn,
-                activePiece: {}, 
-                lastMoveStart: payload.lastMoveStart,
-                lastMoveEnd: payload.lastMoveEnd,
-                validMoveSquares: [],
-                currentPlayer: payload.currentPlayer,
-                enPassantablePawn: payload.enPassantablePawn,
-                whiteInCheck: false,
-                blackInCheck: false
-            }
+            return constructStatePostMoveChoice(state, payload.toRow, payload.toCol, payload.moveType, payload.moveSubType);
 
         case 'updateStatePostPromotion':
             payload = action.payload;
-
-            return {
-                ...state,
-                boardPositions: payload.boardPositions, 
-                displayPromotionOptions: false,
-                promoteColumn: -1,
-                activePiece: {}, 
-                validMoveSquares: [],
-                currentPlayer: payload.currentPlayer
-            }
+            return constructStatePostPromotionChoice(state, payload.newPiece, payload.row, payload.col);
 
         case 'restartGame':
             return initialState;
