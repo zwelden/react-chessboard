@@ -50,6 +50,13 @@ const ChessboardContainer = (props) => {
         });
     }
 
+    const dispatchGoToTurn = (turn) => {
+        dispatch({
+            type: 'goToTurn',
+            payload: turn
+        })
+    }
+
     return (
         <React.Fragment>
             <div className="board-wrapper">
@@ -91,6 +98,7 @@ const ChessboardContainer = (props) => {
                 <ActionsContainer 
                     restartGame={() => {dispatch({type: 'restartGame'})}}
                     flipBoardOrientation={() => dispatch({type: 'flipBoardOrientation'})} 
+                    goToTurn={dispatchGoToTurn}
                 />
             </div>
         </React.Fragment>
