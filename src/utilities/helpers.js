@@ -75,6 +75,11 @@ export const constructStatePostMoveChoice = (state, toRow, toCol, moveType, move
     let displayPromotionOptions = false;
     let promoteColumn = -1;
     let newState = {...state};
+    let notation = '';
+    let notationPiece = '';
+    let notationCapture = '';
+    let notationToSquare = '';
+    let notationCheck = '';
 
     newBoardState[oldRow][oldCol] = '';
     newBoardState[toRow][toCol] = piece;
@@ -136,7 +141,6 @@ export const constructStatePostMoveChoice = (state, toRow, toCol, moveType, move
         boardPositions: newBoardState, 
         displayPromotionOptions: displayPromotionOptions,
         promoteColumn: promoteColumn,
-        activePiece: {}, 
         lastMoveStart: {row: oldRow, col: oldCol},
         lastMoveEnd: {row: toRow, col: toCol},
         validMoveSquares: [],
@@ -150,7 +154,38 @@ export const constructStatePostMoveChoice = (state, toRow, toCol, moveType, move
         return newState;
     }
 
-    return determineStateForNextPlayer(newState, currentPlayer, nextPlayer, newBoardState);
+    newState = {...newState, activePiece: {}};
+
+    newState = determineStateForNextPlayer(newState, currentPlayer, nextPlayer, newBoardState);
+
+    if (piece.charAt(0) !== 'p') {
+        notationPiece = piece.charAt(0).toUpperCase();
+    }
+    
+    if (piece.charAt(0) === 'p' && moveType === 'capture') {
+        notationPiece = moveSquareFromRowCol(oldRow, oldCol).charAt(0);
+    }
+
+    if (moveType === 'capture') {
+        notationCapture = 'x';
+    }
+
+    notationToSquare = moveSquareFromRowCol(toRow, toCol);
+
+    if (newState[nextPlayer + 'InCheck'] === true) {
+        notationCheck = '+';
+
+        if (newState.gameOver === true && newState.outcome === 'checkmate') {
+            notationCheck = '#';
+        }
+    }
+
+    notation = notationPiece + notationCapture + notationToSquare + notationCheck;
+
+    return {
+        ...newState,
+        moveNotation: notation
+    }
 }
 
 export const  constructStatePostPromotionChoice = (state, newPiece, row, col) => {
@@ -158,7 +193,15 @@ export const  constructStatePostPromotionChoice = (state, newPiece, row, col) =>
     let currentPlayer = state.currentPlayer;
     let pieceColor = (currentPlayer === 'white') ? 'w' : 'b';
     let nextPlayer = (currentPlayer === 'white') ? 'black' : 'white';
+    let oldRow = state.activePiece.row;
+    let oldCol = state.activePiece.col;
     let newState = {};
+    let notation = '';
+    let notationPiece = '';
+    let notationCapture = '';
+    let notationToSquare = '';
+    let notationPromotion = '=' + newPiece.toUpperCase();
+    let notationCheck = '';
     
     newBoardState[row][col] = newPiece + pieceColor;
 
@@ -172,5 +215,47 @@ export const  constructStatePostPromotionChoice = (state, newPiece, row, col) =>
         currentPlayer: nextPlayer
     }
 
-    return determineStateForNextPlayer(newState, currentPlayer, nextPlayer, newBoardState);
+    newState =  determineStateForNextPlayer(newState, currentPlayer, nextPlayer, newBoardState);
+
+    notationPiece = moveSquareFromRowCol(oldRow, oldCol).charAt(0);
+    notationToSquare = moveSquareFromRowCol(row, col);
+
+    if (notationPiece.charAt(0) === notationToSquare.charAt(0)) {
+        notationPiece = '';
+    }
+    else {
+        notationCapture = 'x';
+    }
+    
+    if (newState[nextPlayer + 'InCheck'] === true) {
+        notationCheck = '+';
+
+        if (newState.gameOver === true && newState.outcome === 'checkmate') {
+            notationCheck = '#';
+        }
+    }
+
+    notation = notationPiece + notationCapture + notationToSquare + notationPromotion + notationCheck;
+
+    return {
+        ...newState,
+        moveNotation: notation
+    }
+}
+
+export const moveSquareFromRowCol = (toRow, toCol) => {
+    let colMap = 'abcdefgh';
+    let rowMap = '12345678';
+
+    return colMap.charAt(toCol) + rowMap.charAt(toRow);
+}
+
+export const constructNotationPairArr = (notationArr) => {
+    let movePairArr = [];
+
+    for (let idx = 0; idx < notationArr.length; idx+=2) {
+        movePairArr.push(notationArr.slice(idx, idx+2));
+    }
+
+    return movePairArr;
 }

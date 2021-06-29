@@ -74,11 +74,13 @@ const ChessboardContainer = (props) => {
                     whiteInCheck={state.whiteInCheck}
                     blackInCheck={state.blackInCheck}
                 />
-                <ValidMoveSquares 
-                    locations={state.validMoveSquares} 
-                    selectMoveChoice={selectMoveChoice} 
-                    boardOrientation={state.boardOrientation}
-                />
+                {state.canMakeMoves && 
+                    <ValidMoveSquares 
+                        locations={state.validMoveSquares} 
+                        selectMoveChoice={selectMoveChoice} 
+                        boardOrientation={state.boardOrientation}
+                    />
+                }
                 {state.displayPromotionOptions && 
                     <PawnPromotionOptions 
                         boardOrientation={state.boardOrientation} 
@@ -96,6 +98,8 @@ const ChessboardContainer = (props) => {
             </div>
             <div className="actions-pane">
                 <ActionsContainer 
+                    currentMove={state.currentMove}
+                    notationHistory={state.notationHistory}
                     restartGame={() => {dispatch({type: 'restartGame'})}}
                     flipBoardOrientation={() => dispatch({type: 'flipBoardOrientation'})} 
                     goToTurn={dispatchGoToTurn}

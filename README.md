@@ -1,6 +1,10 @@
-# Getting Started with Create React App
+# React Chessboard App 
+A simplified chessboard app created using React. 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Chessboard App Screenshot](./img/react_chessboard_screenshot.png)
+
+## Demo Site 
+A live demo is avaliable at: [https://stupefied-elion-9d2f79.netlify.app/](https://stupefied-elion-9d2f79.netlify.app/)
 
 ## Available Scripts
 

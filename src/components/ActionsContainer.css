@@ -47,7 +47,7 @@
     border: 1px solid #ddd;
     background: #fafafa;
     border-radius: 6px;
-    box-shadow: inset 0 0 5px #ccc;
+    overflow: hidden;
 }
 
 .actions-button.history-button {
@@ -56,4 +56,45 @@
 
 .actions-button.history-button:last-child {
     margin-right: 0;
+}
+
+.notation-header,
+.notation-pair-container {
+    display: flex;
+}
+
+.notation-pair-container:last-child {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.move-order,
+.notation-white,
+.notation-black {
+    padding: 6px;
+    font-size: 1.1rem;
+}
+
+.move-order {
+    width: 20%;
+    background: #efefef;
+    border-right: 1px solid #e0e0e0;
+}
+
+.notation-white,
+.notation-black {
+    width: 40%;
+}
+
+.highlight-notation {
+    background: #e6efbc;
+}
+
+.notation-header .move-order,
+.notation-header .notation-white,
+.notation-header .notation-black {
+    background: #f7f7f7;
+    font-size: .9rem;
+    color: #777;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
 }

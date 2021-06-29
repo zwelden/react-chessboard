@@ -5,11 +5,15 @@ import {ReactComponent as ChevronRightIcon} from '../assets/img/chevron_right.sv
 import {ReactComponent as ChevronDoubleLeftIcon} from '../assets/img/chevron_double_left.svg';
 import {ReactComponent as ChevronDoubleRighIcon} from '../assets/img/chevron_double_right.svg';
 
-
+import { constructNotationPairArr } from '../utilities/helpers';
 
 import './ActionsContainer.css';
 
-const ActionsContainer = ({flipBoardOrientation, restartGame, goToTurn}) => {
+const ActionsContainer = ({flipBoardOrientation, restartGame, goToTurn, notationHistory, currentMove}) => {
+    let notationPairs = constructNotationPairArr(notationHistory);
+    let highlightIdx = Math.floor((currentMove - 1) / 2); 
+    let highlightMove = (currentMove % 2 === 0) ? 1 : 0;
+
     return (
         <div className="actions-container">
             <div className="board-actions">
@@ -25,7 +29,23 @@ const ActionsContainer = ({flipBoardOrientation, restartGame, goToTurn}) => {
                 </div>
             </div>
             <div className="history-actions">
-                <div className="history-container"></div>
+                <div className="history-container">
+                    <div className="notation-header">
+                        <div className="move-order">Move</div>
+                        <div className="notation-white">White</div>
+                        <div className="notation-white">Black</div>
+                    </div>
+                    {notationPairs.map((notationPair, index) => {
+                        let highlightWhite = (highlightIdx === index && highlightMove === 0) ? 'highlight-notation' : '';
+                        let highlightBlack = (highlightIdx === index && highlightMove === 1) ? 'highlight-notation' : '';
+                        
+                        return (<div className="notation-pair-container" key={index}>
+                            <div className="move-order">{index + 1}</div>
+                            <div className={"notation-white " + highlightWhite}>{notationPair[0]}</div>
+                            <div className={"notation-black " + highlightBlack}>{notationPair.length === 2 && notationPair[1]}</div>  
+                        </div>)
+                    })}
+                </div>
                 <div className="history-actions-buttons">
                     <button className="actions-button history-button" onClick={() => {goToTurn('first')}}>
                         <ChevronDoubleLeftIcon />

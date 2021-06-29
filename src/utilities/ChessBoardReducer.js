@@ -6,6 +6,7 @@ import {
 
 export const initialState = {
     currentMove: 0,
+    canMakeMoves: true,
     gameOver: false,
     outcome: '',
     winner: '',
@@ -36,33 +37,8 @@ export const initialState = {
     blackKingsRookMoved: false,
     whiteQueensRookMoved: false,
     blackQueensRookMoved: false,
-    boardHistory: [
-        {
-            currentMove: 0,
-            currentPlayer: 'white',
-            lastMoveStart: {row: -1, col: -1},
-            lastMoveEnd: {row: -1, col: -1},
-            boardPositions: [
-                ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw'],
-                ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw'],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['', '', '', '', '', '', '', ''],
-                ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb'],
-                ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
-            ],
-            enPassantablePawn: {},
-            whiteInCheck: false,
-            blackInCheck: false,
-            whiteKingMoved: false,
-            blackKingMoved: false,
-            whiteKingsRookMoved: false,
-            blackKingsRookMoved: false,
-            whiteQueensRookMoved: false,
-            blackQueensRookMoved: false
-        }
-    ]
+    notationHistory: [],
+    boardHistory: []
 }
 
 
@@ -131,6 +107,7 @@ export const reducer = (state, action) => {
             postMoveState = {
                 ...postMoveState,
                 currentMove: postMoveState.currentMove + 1,
+                notationHistory: state.notationHistory.concat(postMoveState.moveNotation),
                 boardHistory: postMoveState.boardHistory.concat({
                     currentMove: postMoveState.currentMove + 1,
                     currentPlayer: postMoveState.currentPlayer,
@@ -158,6 +135,7 @@ export const reducer = (state, action) => {
             postPromotionState = {
                 ...postPromotionState,
                 currentMove: postPromotionState.currentMove + 1,
+                notationHistory: state.notationHistory.concat(postPromotionState.moveNotation),
                 boardHistory: postPromotionState.boardHistory.concat({
                     currentMove: postPromotionState.currentMove  + 1,
                     currentPlayer: postPromotionState.currentPlayer,
@@ -182,38 +160,72 @@ export const reducer = (state, action) => {
             let currentMove = state.currentMove;
             let historyLen = state.boardHistory.length;
             let turnTarget = action.payload;
-            let targetMove = 0;
+            let canMakeMoves = false;
+            let targetMoveIdx = 0;
+            let historyDirection = '';
 
             switch (turnTarget) {
                 case 'first':
-                    targetMove = 0;
+                    historyDirection = 'back';
+                    targetMoveIdx = 0;
                     break;
 
                 case 'prev':
-                    targetMove = currentMove - 1;
+                    historyDirection = 'back';
+                    targetMoveIdx = currentMove - 2;
                     break;
 
                 case 'next':
-                    targetMove = currentMove + 1;
+                    historyDirection = 'forward';
+                    targetMoveIdx = currentMove;
                     break;
 
                 case 'last':
-                    targetMove = historyLen - 1;
+                    historyDirection = 'forward';
+                    targetMoveIdx = historyLen - 1;
                     break;
 
                 default:
                     break;
             }
 
-            if (currentMove === 0 && targetMove < 0) { return state; }
-            if (targetMove >= historyLen) {
-                targetMove = historyLen - 1;
+            if (historyDirection === 'back' && currentMove <= 1 && targetMoveIdx <= 0) { 
+                return {
+                    ...state,
+                    canMakeMoves: canMakeMoves,
+                    currentPlayer: initialState.currentPlayer,
+                    currentMove:  initialState.currentMove,
+                    lastMoveStart:  initialState.lastMoveStart,
+                    lastMoveEnd: initialState.lastMoveEnd,
+                    boardPositions: [...initialState.boardPositions],
+                    enPassantablePawn: initialState.enPassantablePawn,
+                    whiteInCheck: initialState.whiteInCheck,
+                    blackInCheck: initialState.blackInCheck,
+                    whiteKingMoved: initialState.whiteKingMoved,
+                    blackKingMoved: initialState.blackKingMoved,
+                    whiteKingsRookMoved: initialState.whiteKingsRookMoved,
+                    blackKingsRookMoved: initialState.blackKingsRookMoved,
+                    whiteQueensRookMoved: initialState.whiteQueensRookMoved,
+                    blackQueensRookMoved: initialState.blackQueensRookMoved
+                }
+            }
+            if (targetMoveIdx >= historyLen && historyLen > 0) {
+                targetMoveIdx = historyLen - 1;
+            }
+            if (targetMoveIdx >= historyLen && historyLen === 0) {
+                return state;
             }
 
-            let targetState = state.boardHistory[targetMove];
+            if (targetMoveIdx === historyLen - 1) {
+                canMakeMoves = true;
+            }
+
+
+            let targetState = state.boardHistory[targetMoveIdx];
 
             return {
                 ...state,
+                canMakeMoves: canMakeMoves,
                 currentPlayer: targetState.currentPlayer,
                     currentMove:  targetState.currentMove,
                     lastMoveStart:  targetState.lastMoveStart,
