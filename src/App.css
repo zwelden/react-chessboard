@@ -13,3 +13,10 @@
   height: 100%;
   width: 100%;
 }
+
+
+@media screen and (max-width: 1170px) {
+  .chessboard-container {
+    flex-direction: column;
+  }
+}

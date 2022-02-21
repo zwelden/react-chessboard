@@ -6,4 +6,17 @@
     position: relative;
     border: 6px solid #9d6633;
     box-shadow: 0 4px 10px #cecece;
+    margin-bottom: 1rem;
+}
+
+
+@media screen and (max-width: 1170px) {
+    .board-wrapper {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .actions-pane {
+        margin-right: 1rem;
+    }
 }
